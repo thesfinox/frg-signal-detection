@@ -1,0 +1,104 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+authors = [
+    { name = "Vincent Lahoche", email = "vincent.lahoche@cea.fr" },
+    { name = "Dine Ousmane Samary", email = "dine.ousmanesamary@cea.fr" },
+    { name = "Riccardo Finotello", email = "riccardo.finotello@cea.fr" },
+]
+name = "frg-signal-detection"
+description = "An agnostic definition of detection limit using renormalization group techniques"
+maintainers = [
+    { name = "Riccardo Finotello", email = "riccardo.finotello@cea.fr" },
+]
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.12"
+keywords = [
+    "signal detection",
+    "renormalization group",
+    "theoretical physics",
+    "information theory",
+    "field theory",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering",
+]
+license = { file = "LICENSE" }
+dynamic = ["version", "dependencies"]
+
+[project.optional-dependencies]
+test = ["pytest>=7.4.0", "pytest-cov>=4.1.0"]
+docs = ["sphinx>=6.2.1", "sphinx-rtd-theme>=1.2.0"]
+
+[project.urls]
+Homepage = "https://gitlab.in2p3.fr/data-analysis/mv-detection-limit"
+Documentation = "https://detection-limit-signal-detection-db0eefa500d1c4c011fb006e8740d8.pages.in2p3.fr/"
+Repository = "https://gitlab.in2p3.fr/data-analysis/mv-detection-limit"
+Issues = "https://gitlab.in2p3.fr/data-analysis/mv-detection-limit/-/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "frg.__version__" }
+dependencies = { file = "requirements.txt" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    ".venv",
+]
+
+line-length = 80
+indent-width = 4
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
