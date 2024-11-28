@@ -130,16 +130,13 @@ class MarchenkoPastur:
         # Compute the highest and lowest eigenvalues
         self.lplus = self.sigma**2 * (1.0 + np.sqrt(self.ratio)) ** 2
         self.lminus = self.sigma**2 * (1.0 - np.sqrt(self.ratio)) ** 2
-        self.m2 = 1 / self.lplus  # Mass
         if self.lminus > self.lplus:
             raise ValueError(
                 "The lowest eigenvalue must be lower than the highest one, but got lminus = %f > %f = lplus!"
                 % (self.lminus, self.lplus)
             )
 
-    def pdf(
-        self, x: float | ArrayLike, shift: float = 0.0
-    ) -> float | ArrayLike:
+    def pdf(self, x: float | ArrayLike) -> float | ArrayLike:
         """
         Compute the PDF of the Marchenko-Pastur distribution.
 
@@ -147,8 +144,6 @@ class MarchenkoPastur:
         ----------
         x : float | ArrayLike
             The value(s) at which to evaluate the PDF.
-        shift : float, optional
-            The shift of the distribution in the x axis, by default 0.
 
         Returns
         -------
@@ -157,19 +152,13 @@ class MarchenkoPastur:
         """
         # If x is not a scalar, then vectorize the function
         if not np.isscalar(x):
-            return np.vectorize(self.pdf, otypes=[np.float64])(x, shift)
+            return np.vectorize(self.pdf, otypes=[np.float64])(x)
 
-        if (x <= self.lminus - shift) or (x >= self.lplus - shift):
-            return 0.0
-        num = np.sqrt(
-            max(0, self.lplus - shift - x) * max(0, x + shift - self.lminus)
-        )
-        den = 2.0 * np.pi * self.sigma**2 * self.ratio * (x + shift)
-        return num / den
+        num = np.sqrt(max(0, self.lplus - x) * max(0, x - self.lminus))
+        den = 2.0 * np.pi * self.sigma**2 * self.ratio * x
+        return num / den if den != 0.0 else 0.0
 
-    def cdf(
-        self, x: float | ArrayLike, shift: float = 0.0
-    ) -> float | ArrayLike:
+    def cdf(self, x: float | ArrayLike, x0: float = 0.0) -> float | ArrayLike:
         """
         Compute the CDF of the Marchenko-Pastur distribution.
 
@@ -177,8 +166,8 @@ class MarchenkoPastur:
         ----------
         x : float | ArrayLike
             The value(s) at which to evaluate the CDF.
-        shift : float, optional
-            The shift of the distribution in the x axis, by default 0.
+        x0 : float, optional
+            The lower bound of integration, by default 0.
 
         Returns
         -------
@@ -187,13 +176,15 @@ class MarchenkoPastur:
         """
         # If x is not a scalar, then vectorize the function
         if not np.isscalar(x):
-            return np.vectorize(self.cdf, otypes=[np.float64])(x, shift)
+            return np.vectorize(self.cdf, otypes=[np.float64])(x)
 
-        if x <= self.lminus - shift:
+        if x <= self.lminus:
             return 0.0
-        if x >= self.lplus - shift:
+        if x >= self.lplus:
             return 1.0
-        return quad(lambda y: self.pdf(y, shift), self.lminus - shift, x)[0]
+        if x0 <= self.lminus:
+            x0 = self.lminus
+        return quad(lambda y: self.pdf(y), x0, x)[0]
 
     def ipdf(self, x: float | ArrayLike) -> float | ArrayLike:
         """
@@ -213,9 +204,8 @@ class MarchenkoPastur:
         if not np.isscalar(x):
             return np.vectorize(self.ipdf, otypes=[np.float64])(x)
 
-        return (
-            self.pdf(1 / (x + self.m2), shift=self.lminus) / (x + self.m2) ** 2
-        )
+        m2 = 1 / self.lplus
+        return self.pdf(1 / (x + m2)) / (x + m2) ** 2
 
     def canonical_dimensions(self) -> dict[str, ArrayLike]:
         """

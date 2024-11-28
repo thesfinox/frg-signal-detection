@@ -40,18 +40,6 @@ class TestMarchenkoPastur:
         assert mp.pdf(mp.lplus) == 0.0
         assert quad(mp.pdf, mp.lminus, mp.lplus)[0] == pytest.approx(1.0)
 
-    def test_shift_pdf(self):
-        mp = MarchenkoPastur(0.5, 1.0)
-        assert mp.pdf(0.0, 1.0) > 0.0
-        assert mp.pdf(50.0, 1.0) == 0.0
-        assert isinstance(mp.pdf([0.0, 50.0], 1.0), np.ndarray)
-        assert (mp.pdf([-10.0, 50.0], 1.0) == np.array([0.0, 0.0])).all()
-        assert mp.pdf(mp.lminus, 1.0) > 0.0
-        assert mp.pdf(0.0001, mp.lminus) > 0.0
-        assert mp.pdf(mp.lplus, mp.lminus) == 0.0
-        assert mp.pdf(mp.lplus - mp.lminus, mp.lminus) == 0.0
-        assert mp.pdf(mp.lplus - mp.lminus - 0.0001, mp.lminus) > 0.0
-
     def test_cdf(self):
         mp = MarchenkoPastur(0.5, 1.0)
         assert mp.cdf(0.0) == 0.0
@@ -64,20 +52,8 @@ class TestMarchenkoPastur:
         y = mp.cdf(x)
         assert all((y[1:] - y[:-1]) >= 0.0)  # test monotonic increasing
 
-    def test_shift_cdf(self):
-        mp = MarchenkoPastur(0.5, 1.0)
-        assert mp.cdf(0.0, 1.0) > 0.0
-        assert mp.cdf(50.0, 1.0) == 1.0
-        assert isinstance(mp.cdf([0.0, 50.0], 1.0), np.ndarray)
-        assert (mp.cdf([-10.0, 50.0], 1.0) == np.array([0.0, 1.0])).all()
-        assert mp.cdf(mp.lminus, 1.0) > 0.0
-        assert mp.cdf(0.0001, mp.lminus) > 0.0
-        assert mp.cdf(mp.lplus, mp.lminus) == 1.0
-        assert mp.cdf(mp.lplus - mp.lminus, mp.lminus) == 1.0
-        assert mp.cdf(mp.lplus - mp.lminus - 0.0001, mp.lminus) > 0.0
-        x = np.linspace(mp.lminus, mp.lplus, 100)
-        y = mp.cdf(x, 1.0)
-        assert all((y[1:] - y[:-1]) >= 0.0)  # test monotonic increasing
+        # Test with different arguments
+        assert mp.cdf(2.0, x0=0.0) == mp.cdf(2.0)
 
     def test_ipdf(self):
         mp = MarchenkoPastur(0.5, 1.0)
