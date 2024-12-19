@@ -74,8 +74,9 @@ def get_logger(name: str) -> logging.Logger:
     # Set up the format
     handler = logging.StreamHandler()
     formatter = logging.Formatter(
-        fmt="%(asctime)s | [%(levelname)8s] : %(message)s",
+        fmt="{asctime} | [{levelname:^8s}] : {message}",
         datefmt="%Y-%m-%d %H:%M:%S",
+        style="{",
     )
 
     # Set the format
