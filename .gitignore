@@ -1,6 +1,10 @@
 # Do not consider the VSCode directory and log files
 .vscode/
 
+# Images and results
+plots/*
+results/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

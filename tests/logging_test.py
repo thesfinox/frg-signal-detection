@@ -6,7 +6,7 @@ Test the logging features.
 
 import logging
 
-from simulation import get_logger
+from frg.utils.utils import get_logger
 
 
 def test_logging(caplog):

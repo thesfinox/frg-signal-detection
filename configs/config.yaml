@@ -1,0 +1,20 @@
+COV:
+  PATH: null
+DATA:
+  OUTPUT_DIR: results
+DIST:
+  NUM_SAMPLES: 1000
+  RATIO: 0.5
+  SEED: 42
+  SIGMA: 1.0
+  UV_SCALE: 1.0e-5
+PLOTS:
+  OUTPUT_DIR: plots
+POT:
+  KAPPA_INIT: 1.0e-05
+  U2_INIT: 1.0e-05
+  U4_INIT: 1.0e-05
+  U6_INIT: 1.0e-5
+SIG:
+  IMAGE: null
+  SNR: 0.0

@@ -4,7 +4,7 @@ Test configuration
 Test the configuration initialisation
 """
 
-from simulation import get_cfg_defaults
+from frg.utils.utils import get_cfg_defaults
 
 
 def test_cfg_defaults():
