@@ -3,8 +3,12 @@ Utility functions and helpers to handle configuration files and logging.
 """
 
 import logging
+from pathlib import Path
 
+import numpy as np
 from yacs.config import CfgNode as CN
+
+from frg.distributions.distributions import EmpiricalDistribution
 
 
 def get_cfg_defaults() -> CN:
@@ -88,3 +92,39 @@ def get_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
     logger.addHandler(handler)
 
     return logger
+
+
+def load_data(cfg: CN) -> EmpiricalDistribution:
+    """
+    Load the data from file.
+
+    Parameters
+    ----------
+    cfg : CN
+        The configuration file.
+
+    Returns
+    -------
+    EmpiricalDistribution
+        The distribution
+    """
+    data = Path(cfg.SIG.INPUT)
+    if not data.exists():
+        raise FileNotFoundError("Input data file %s does not exist!" % data)
+
+        # Create the distribution
+    if "npy" in data.suffix.lower():
+        # Load covariance matrix
+        data = np.load(data)
+        dist = EmpiricalDistribution.from_covariance(data).fit()
+    elif ("png" in data.suffix.lower()) or ("jpg" in data.suffix.lower()):
+        # Load image
+        from PIL import Image
+
+        img = np.array(Image.open(data))
+        dist = EmpiricalDistribution.from_config(cfg).fit(
+            X=img,
+            snr=cfg.SIG.SNR,
+        )
+
+    return dist
