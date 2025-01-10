@@ -5,6 +5,11 @@
 plots/*
 results/*
 
+# Configuration files (except default)
+configs/*
+!configs/config.yaml
+!configs/parameters.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
