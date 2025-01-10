@@ -9,10 +9,10 @@ PLOTS:
   OUTPUT_DIR: plots
 POT:
   UV_SCALE: 1.0e-05
-  KAPPA_INIT: 1.0e-05
+  KAPPA_INIT: 1.0e-09
   U2_INIT: 1.0e-05
   U4_INIT: 1.0e-05
   U6_INIT: 0.0
 SIG:
   INPUT: "/home/catA/rf265700/Datasets/frg-signal-detection/mnist_1.png"
-  SNR: 0.0
+  SNR: 0.5
