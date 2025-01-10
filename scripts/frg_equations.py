@@ -48,7 +48,7 @@ def main(a: argparse.Namespace) -> int | str:
         )
 
         # Marchenko-Pastur distribution
-        x_uv = cfg.DIST.UV_SCALE
+        x_uv = cfg.POT.UV_SCALE
         mp = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
         k2, u2, u4, u6 = mp.frg_equations(
             x_uv,

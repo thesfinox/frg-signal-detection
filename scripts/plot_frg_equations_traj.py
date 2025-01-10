@@ -55,6 +55,8 @@ def main(a: argparse.Namespace) -> int | str:
 
         # Plot the dimensions
         logger.debug("Plotting the running coupling in file %s..." % d)
+        ax[0].axvline(0.0, color="k", linestyle="--", alpha=0.15)
+        ax[0].axhline(0.0, color="k", linestyle="--", alpha=0.15)
         ax[0].plot(u2, u4, "k-")
         ax[0].plot([u2[0]], [u4[0]], "bo")
         ax[0].plot([u2[-1]], [u4[-1]], "ro")
@@ -66,6 +68,8 @@ def main(a: argparse.Namespace) -> int | str:
             useMathText=True,
         )
 
+        ax[1].axvline(0.0, color="k", linestyle="--", alpha=0.15)
+        ax[1].axhline(0.0, color="k", linestyle="--", alpha=0.15)
         ax[1].plot(u2, u6, "k-")
         ax[1].plot([u2[0]], [u6[0]], "bo")
         ax[1].plot([u2[-1]], [u6[-1]], "ro")
@@ -77,6 +81,8 @@ def main(a: argparse.Namespace) -> int | str:
             useMathText=True,
         )
 
+        ax[2].axvline(0.0, color="k", linestyle="--", alpha=0.15)
+        ax[2].axhline(0.0, color="k", linestyle="--", alpha=0.15)
         ax[2].plot(u4, u6, "k-")
         ax[2].plot([u4[0]], [u6[0]], "bo")
         ax[2].plot([u4[-1]], [u6[-1]], "ro")

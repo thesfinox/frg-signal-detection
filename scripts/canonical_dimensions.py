@@ -50,7 +50,7 @@ def main(a: argparse.Namespace) -> int | str:
         )
 
         # Marchenko-Pastur distribution
-        x_max = cfg.DIST.UV_SCALE
+        x_max = cfg.POT.UV_SCALE
         x = np.linspace(0.0, x_max, num=1000)
         mp = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
         dimu2, dimu4, dimu6, _ = mp.canonical_dimensions(x).T
