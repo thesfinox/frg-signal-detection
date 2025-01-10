@@ -4,7 +4,10 @@ Test configuration
 Test the configuration initialisation
 """
 
-from frg.utils.utils import get_cfg_defaults
+import pytest
+
+from frg.distributions.distributions import EmpiricalDistribution
+from frg.utils.utils import get_cfg_defaults, load_data
 
 
 def test_cfg_defaults():
@@ -33,3 +36,24 @@ def test_cfg_defaults():
 
     assert hasattr(cfg, "PLOTS")
     assert cfg.PLOTS.OUTPUT_DIR == "plots"
+
+
+def test_load_data():
+    """Test the loading of data."""
+    cfg = get_cfg_defaults()
+
+    cfg["SIG"]["INPUT"] = "spam.png"
+    with pytest.raises(FileNotFoundError):
+        load_data(cfg)
+
+    cfg["SIG"]["INPUT"] = "tests/data/mnist.png"
+    dist = load_data(cfg)
+    assert isinstance(dist, EmpiricalDistribution)
+
+    # cfg["SIG"]["INPUT"] = "tests/data/mnist.npy"
+    # dist = load_data(cfg)
+    # assert isinstance(dist, EmpiricalDistribution)
+
+    cfg["SIG"]["INPUT"] = "spam.npy"
+    with pytest.raises(FileNotFoundError):
+        load_data(cfg)
