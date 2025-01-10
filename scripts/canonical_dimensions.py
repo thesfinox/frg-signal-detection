@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 from frg import MarchenkoPastur, get_cfg_defaults, get_logger
+from frg.utils.utils import load_data
 
 __author__ = "Riccardo Finotello"
 __email__ = "riccardo.finotello@cea.fr"
@@ -44,33 +45,35 @@ def main(a: argparse.Namespace) -> int | str:
         return 0
 
     # Run the simulation
+    logger.info("Computing the canonical dimensions...")
+
+    # Distribution parameters
+    x_max = cfg.POT.UV_SCALE
+    x = np.linspace(0.0, x_max, num=1000)
+
+    # Define the distribution
     if a.analytic:
-        logger.info(
-            "Computing the canonical dimensions of the analytic distribution..."
-        )
+        dist = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
+    else:
+        dist = load_data(cfg)
 
-        # Marchenko-Pastur distribution
-        x_max = cfg.POT.UV_SCALE
-        x = np.linspace(0.0, x_max, num=1000)
-        mp = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
-        dimu2, dimu4, dimu6, _ = mp.canonical_dimensions(x).T
+    # Compute the canonical dimensions
+    dimu2, dimu4, dimu6, _ = dist.canonical_dimensions(x).T
 
-        # Save data
-        output_dir = Path(cfg.DATA.OUTPUT_DIR)
-        output_dir.mkdir(parents=True, exist_ok=True)
-        output_file = output_dir / "mp_canonical_dimensions.json"
-        payload = {
-            "k2": x.tolist(),
-            "dimu2": dimu2.tolist(),
-            "dimu4": dimu4.tolist(),
-            "dimu6": dimu6.tolist(),
-            "dist": mp.ipdf(x).tolist(),
-        }
-        with open(output_file, "w") as f:
-            json.dump(payload, f)
-        logger.info("Results saved in %s" % output_file)
-
-        return 0
+    # Save data
+    output_dir = Path(cfg.DATA.OUTPUT_DIR)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / "mp_canonical_dimensions.json"
+    payload = {
+        "k2": x.tolist(),
+        "dimu2": dimu2.tolist(),
+        "dimu4": dimu4.tolist(),
+        "dimu6": dimu6.tolist(),
+        "dist": dist.ipdf(x).tolist(),
+    }
+    with open(output_file, "w") as f:
+        json.dump(payload, f)
+    logger.info("Results saved in %s" % output_file)
 
     return 0
 

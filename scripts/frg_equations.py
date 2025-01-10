@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from frg import MarchenkoPastur, get_cfg_defaults, get_logger
+from frg.utils.utils import load_data
 
 __author__ = "Riccardo Finotello"
 __email__ = "riccardo.finotello@cea.fr"
@@ -42,39 +43,41 @@ def main(a: argparse.Namespace) -> int | str:
         return 0
 
     # Run the simulation
+    logger.info("Computing the running coupling...")
+
+    # Distribution parameters
+    x_uv = cfg.POT.UV_SCALE
+
+    # Define the distribution
     if a.analytic:
-        logger.info(
-            "Computing the running coupling of the analytic distribution..."
-        )
+        dist = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
+    else:
+        dist = load_data(cfg)
 
-        # Marchenko-Pastur distribution
-        x_uv = cfg.POT.UV_SCALE
-        mp = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
-        k2, u2, u4, u6 = mp.frg_equations(
-            x_uv,
-            u2_init=cfg.POT.U2_INIT,
-            u4_init=cfg.POT.U4_INIT,
-            u6_init=cfg.POT.U6_INIT,
-        ).T
+    # Compute the running
+    k2, u2, u4, u6 = dist.frg_equations(
+        x_uv,
+        u2_init=cfg.POT.U2_INIT,
+        u4_init=cfg.POT.U4_INIT,
+        u6_init=cfg.POT.U6_INIT,
+    ).T
 
-        # Save data
-        output_dir = Path(cfg.DATA.OUTPUT_DIR)
-        output_dir.mkdir(parents=True, exist_ok=True)
-        output_file = (
-            output_dir
-            / f"mp_frg_equations_u2={cfg.POT.U2_INIT}_u4={cfg.POT.U4_INIT}_u6={cfg.POT.U6_INIT}.json"
-        )
-        payload = {
-            "k2": k2.tolist(),
-            "u2": u2.tolist(),
-            "u4": u4.tolist(),
-            "u6": u6.tolist(),
-        }
-        with open(output_file, "w") as f:
-            json.dump(payload, f)
-        logger.info("Data saved in %s" % output_file)
-
-        return 0
+    # Save data
+    output_dir = Path(cfg.DATA.OUTPUT_DIR)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = (
+        output_dir
+        / f"mp_frg_equations_u2={cfg.POT.U2_INIT}_u4={cfg.POT.U4_INIT}_u6={cfg.POT.U6_INIT}.json"
+    )
+    payload = {
+        "k2": k2.tolist(),
+        "u2": u2.tolist(),
+        "u4": u4.tolist(),
+        "u6": u6.tolist(),
+    }
+    with open(output_file, "w") as f:
+        json.dump(payload, f)
+    logger.info("Data saved in %s" % output_file)
 
     return 0
 
