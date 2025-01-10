@@ -10,6 +10,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy.integrate import quad
 from scipy.interpolate import InterpolatedUnivariateSpline
+from skimage.transform import resize
 from yacs.config import CfgNode
 
 
@@ -443,7 +444,7 @@ class EmpiricalDistribution(Distribution):
 
         # Add the signal to the background
         if snr > 0.0:
-            self.data += snr * X
+            self.data += snr * resize(X, output_shape=self.data.shape)
 
         return self
 
