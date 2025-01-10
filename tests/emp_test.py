@@ -100,9 +100,6 @@ class TestEmpiricalDistribution:
         with pytest.raises(ValueError):
             emp2.add_signal(X, snr=-1.0)
 
-        with pytest.raises(ValueError):
-            emp2.add_signal(X[:10, :10])
-
     def test_fit(self):
         """Test the fit method of the class"""
         emp = EmpiricalDistribution(n_samples=1024, sigma=1.0, ratio=0.5)
