@@ -14,5 +14,5 @@ POT:
   U4_INIT: 1.0e-05
   U6_INIT: 0.0
 SIG:
-  INPUT: null
+  INPUT: "/home/catA/rf265700/Datasets/frg-signal-detection/mnist_1.png"
   SNR: 0.0
