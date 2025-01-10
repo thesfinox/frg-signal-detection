@@ -19,25 +19,21 @@ def get_cfg_defaults() -> CN:
 
     cfg = CN()
 
-    # Covariance matrix
-    cfg.COV = CN()
-    cfg.COV.PATH = None
-
     # Distribution parameters
     cfg.DIST = CN()
     cfg.DIST.NUM_SAMPLES = 1000
     cfg.DIST.SIGMA = 1.0
     cfg.DIST.RATIO = 0.5
     cfg.DIST.SEED = 42
-    cfg.DIST.UV_SCALE = 10.0
 
     # Signal parameters
     cfg.SIG = CN()
-    cfg.SIG.IMAGE = None
+    cfg.SIG.INPUT = None
     cfg.SIG.SNR = 0.0
 
     # Potential parameters
     cfg.POT = CN()
+    cfg.POT.UV_SCALE = 1.0e-5
     cfg.POT.KAPPA_INIT = 1.0e-5
     cfg.POT.U2_INIT = 1.0e-5
     cfg.POT.U4_INIT = 1.0e-5
