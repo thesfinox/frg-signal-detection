@@ -54,6 +54,12 @@ def main(a: argparse.Namespace) -> int | str:
     ax.plot(x, dimu4, "g-", label=r"$\text{dim}(u_{4})$")
     ax.plot(x, dimu6, "b-", label=r"$\text{dim}(u_{6})$")
     ax.set(xlabel=r"$k^2$", ylabel="canonical dimension")
+    ax.ticklabel_format(
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
+    )
     ax.legend(
         loc="upper center",
         bbox_to_anchor=(0.5, -0.15),
