@@ -63,6 +63,19 @@ class TestEmpiricalDistribution:
         assert emp.n_vars == int(1000 * 0.5)
         assert emp.seed == 42
 
+    def test_from_covariance(self):
+        """Test the from_covariance method of the class"""
+        X = np.random.randn(100, 50)
+        cov = np.cov(X, rowvar=False)
+        assert cov.shape == (50, 50)
+        emp = EmpiricalDistribution.from_covariance(cov)
+        assert emp._iscov
+        assert emp.n_samples == 9999
+        assert emp.sigma == 1.0
+        assert emp.ratio == 1.0
+        assert emp.seed == 9999
+        assert (emp.data == cov).all()
+
     def test_add_signal(self):
         """Test the add_signal method of the class"""
         emp = EmpiricalDistribution(n_samples=1024, sigma=1.0, ratio=0.5)
@@ -94,7 +107,7 @@ class TestEmpiricalDistribution:
         """Test the fit method of the class"""
         emp = EmpiricalDistribution(n_samples=1024, sigma=1.0, ratio=0.5)
         X = np.random.randn(1024, 512)
-        emp.fit(X, snr=0.0)
+        emp.fit(X, snr=0.5)
         assert hasattr(emp, "eigenvalues")
         assert isinstance(emp.eigenvalues, np.ndarray)
         assert hasattr(emp, "momenta")
@@ -102,3 +115,8 @@ class TestEmpiricalDistribution:
         assert hasattr(emp, "ipdf")
         assert hasattr(emp, "dipdf")
         assert hasattr(emp, "icdf")
+
+        # Test from the covariance matrix
+        cov = np.cov(X, rowvar=False)
+        emp2 = EmpiricalDistribution.from_covariance(cov)
+        emp2.fit()

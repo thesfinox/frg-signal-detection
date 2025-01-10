@@ -360,6 +360,7 @@ class EmpiricalDistribution(Distribution):
 
         # Generate the background distribution
         gen = np.random.default_rng(self.seed)
+        self._iscov = False  # if generated directly from covariance
         self.data = gen.normal(
             loc=0.0,
             scale=self.sigma,
@@ -388,6 +389,31 @@ class EmpiricalDistribution(Distribution):
             seed=cfg.DIST.SEED,
         )
 
+    @classmethod
+    def from_covariance(cls, cov: ArrayLike) -> Self:
+        """
+        Create an instance of the class from a covariance matrix.
+
+        Parameters
+        ----------
+        cov : ArrayLike
+            The covariance matrix.
+
+        Returns
+        -------
+        EmpiricalDistribution
+            An instance of the class
+        """
+        instance = cls(
+            n_samples=9999,
+            sigma=1.0,
+            ratio=1.0,
+            seed=9999,
+        )
+        instance.data = cov
+        instance._iscov = True
+        return instance
+
     def add_signal(self, X: ArrayLike, snr: float = 0.0) -> Self:
         """
         Add a signal to the distribution.
@@ -407,15 +433,8 @@ class EmpiricalDistribution(Distribution):
         Raises
         ------
         ValueError
-            If the shape of the signal is not the same as the background
-        ValueError
             If the signal-to-noise ratio is not positive
         """
-        if self.data.shape != X.shape:
-            raise ValueError(
-                "The shape of the signal must be the same as the background but got %s != %s"
-                % (X.shape, self.data.shape)
-            )
         if snr < 0.0:
             raise ValueError(
                 "The signal-to-noise ratio must be positive but got %f <= 0"
@@ -430,7 +449,12 @@ class EmpiricalDistribution(Distribution):
 
     def _evl(self, X: ArrayLike) -> ArrayLike:
         """
-        Get the eigenvalues of the distribution.
+        Get the eigenvalues of the covariance matrix of the data (from the singular values of the data).
+
+        Parameters
+        ----------
+        X : ArrayLike
+            The data.
 
         Returns
         -------
@@ -439,6 +463,22 @@ class EmpiricalDistribution(Distribution):
         """
         _, S, _ = np.linalg.svd(X, full_matrices=False)
         return S**2 / (self.n_samples - 1)
+
+    def _evl_cov(self, cov: ArrayLike) -> ArrayLike:
+        """
+        Get the eigenvalues of the covariance matrix.
+
+        Parameters
+        ----------
+        cov : ArrayLike
+            The covariance matrix.
+
+        Returns
+        -------
+        ArrayLike
+            The eigenvalues of the distribution.
+        """
+        return np.linalg.eigvalsh(cov)
 
     def fit(self, X: ArrayLike | None = None, snr: float = 0.0) -> Self:
         """
@@ -460,12 +500,14 @@ class EmpiricalDistribution(Distribution):
             self.add_signal(X, snr=snr)
 
         # Compute the eigenvalues
-        self.eigenvalues = self._evl(self.data)
+        self.eigenvalues = (
+            self._evl_cov(self.data) if self._iscov else self._evl(self.data)
+        )
         self.momenta = 1.0 / self.eigenvalues
         self.momenta -= np.min(self.momenta)  # shift to zero
 
         # Create a histogram
-        dx = 1.0 / np.sqrt(X.shape[0])
+        dx = 1.0 / np.sqrt(self.data.shape[0])
         dens, edges = np.histogram(
             self.momenta,
             bins=np.arange(0.0, np.max(self.momenta) + dx, dx),
