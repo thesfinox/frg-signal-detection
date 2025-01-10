@@ -70,7 +70,7 @@ def main(a: argparse.Namespace) -> int | str:
     # Create the configurations
     for v in values:
         cfg_copy = cfg.clone()
-        output_name = "config_"
+        output_name = f"{cfg_file.stem}_"
         for i, name in enumerate(names):
             cfg_copy[name[0]][name[1]] = float(v[i])
             output_name += f"{name[0]}.{name[1]}={v[i]:.2g}"
