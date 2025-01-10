@@ -37,7 +37,7 @@ def get_cfg_defaults() -> CN:
     cfg.POT.KAPPA_INIT = 1.0e-5
     cfg.POT.U2_INIT = 1.0e-5
     cfg.POT.U4_INIT = 1.0e-5
-    cfg.POT.U6_INIT = 0.0
+    cfg.POT.U6_INIT = 1.0e-5
 
     # Data parameters
     cfg.DATA = CN()
