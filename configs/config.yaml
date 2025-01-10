@@ -1,5 +1,3 @@
-COV:
-  PATH: null
 DATA:
   OUTPUT_DIR: results
 DIST:
@@ -7,14 +5,14 @@ DIST:
   RATIO: 0.5
   SEED: 42
   SIGMA: 1.0
-  UV_SCALE: 10.0
 PLOTS:
   OUTPUT_DIR: plots
 POT:
+  UV_SCALE: 1.0e-05
   KAPPA_INIT: 1.0e-05
   U2_INIT: 1.0e-05
   U4_INIT: 1.0e-05
   U6_INIT: 0.0
 SIG:
-  IMAGE: null
+  INPUT: null
   SNR: 0.0
