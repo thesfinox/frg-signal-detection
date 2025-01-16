@@ -1,7 +1,7 @@
 DATA:
   OUTPUT_DIR: results
 DIST:
-  NUM_SAMPLES: 1000
+  NUM_SAMPLES: 10000
   RATIO: 0.5
   SEED: 42
   SIGMA: 1.0
@@ -15,4 +15,4 @@ POT:
   U6_INIT: 0.0
 SIG:
   INPUT: "/home/catA/rf265700/Datasets/frg-signal-detection/mnist_1.png"
-  SNR: 0.5
+  SNR: 0.0
