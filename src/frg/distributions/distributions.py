@@ -444,7 +444,7 @@ class EmpiricalDistribution(Distribution):
 
         # Add the signal to the background
         if snr > 0.0:
-            self.data += snr * resize(X, output_shape=self.data.shape)
+            self.data += snr * resize(X, output_shape=self.data.shape[:2])
 
         return self
 
@@ -463,7 +463,7 @@ class EmpiricalDistribution(Distribution):
             The eigenvalues of the distribution.
         """
         _, S, _ = np.linalg.svd(X, full_matrices=False)
-        return S**2 / (self.n_samples - 1)
+        return S.ravel() ** 2 / (self.n_samples - 1)
 
     def _evl_cov(self, cov: ArrayLike) -> ArrayLike:
         """
@@ -480,6 +480,50 @@ class EmpiricalDistribution(Distribution):
             The eigenvalues of the distribution.
         """
         return np.linalg.eigvalsh(cov)
+
+    @property
+    def eigenvalues_(self) -> ArrayLike:
+        """
+        Compute the eigenvalues of the distribution.
+
+        .. note::
+
+            This is the complete list of eigenvalues (bulk + spikes).
+            You can access the filtered distribution **without** the spikes using the ``self.eigenvalues`` attribute, available after calling the ``self.fit(...)`` method.
+
+        Returns
+        -------
+        ArrayLike
+            The eigenvalues of the distribution, sorted in ascending order.
+        """
+        eigenvalues = (
+            self._evl_cov(self.data) if self._iscov else self._evl(self.data)
+        )
+        return np.sort(eigenvalues)
+
+    def _find_spikes(self, eigenvalues: ArrayLike) -> ArrayLike:
+        """
+        Find the spikes in the eigenvalues.
+
+        Parameters
+        ----------
+        eigenvalues : ArrayLike
+            The eigenvalues of the distribution.
+
+        Returns
+        -------
+        ArrayLike
+            The indices of the spikes.
+        """
+        dx = 1 / np.sqrt(len(eigenvalues))
+
+        # Find the index of the beginning of the bulk distribution
+        #
+        #   >>> Going from right to left until the difference is smaller than dx
+        diff = np.diff(eigenvalues)
+        idx = np.argmin((diff > dx)[::-1])  # True if spike, False if bulk
+
+        return len(eigenvalues) - int(idx)
 
     def fit(self, X: ArrayLike | None = None, snr: float = 0.0) -> Self:
         """
@@ -500,10 +544,11 @@ class EmpiricalDistribution(Distribution):
         if X is not None:
             self.add_signal(X, snr=snr)
 
-        # Compute the eigenvalues
-        self.eigenvalues = (
-            self._evl_cov(self.data) if self._iscov else self._evl(self.data)
-        )
+        # Remove the spikes from the eigenvalues
+        eigenvalues = self.eigenvalues_
+        self.eigenvalues = eigenvalues[: self._find_spikes(eigenvalues)]
+
+        # Compute the momenta
         self.momenta = 1.0 / self.eigenvalues
         self.momenta -= np.min(self.momenta)  # shift to zero
 
@@ -586,7 +631,17 @@ class EmpiricalDistribution(Distribution):
             raise ValueError(
                 "The distribution must be fitted before calling icdf! Please call ``self.fit()`` first."
             )
-        return self._icdf(x)
+        if np.isscalar(x):
+            if x <= 0.0:
+                return 0.0
+            if x >= max(self.momenta):
+                return 1.0
+            return self._icdf(x)
+        else:
+            icdf = self._icdf(x)
+            icdf[x <= 0.0] = 0.0
+            icdf[x >= max(self.momenta)] = 1.0
+            return icdf
 
 
 class MarchenkoPastur(Distribution):
