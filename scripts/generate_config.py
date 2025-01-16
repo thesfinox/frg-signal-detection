@@ -90,18 +90,36 @@ def main(a: argparse.Namespace) -> int | str:
         plt.style.use("grayscale")
 
         # Visualise sampling
-        comb = combinations(range(len(names)), 2)
-        for i, j in comb:
-            x_label = ".".join(names[i])
-            y_label = ".".join(names[j])
-            x_values = values[..., i]
-            y_values = values[..., j]
+        if len(names) > 1:
+            comb = combinations(range(len(names)), 2)
+            for i, j in comb:
+                x_label = ".".join(names[i])
+                y_label = ".".join(names[j])
+                x_values = values[..., i]
+                y_values = values[..., j]
+
+                _, ax = plt.subplots(figsize=(7, 5), layout="constrained")
+                ax.plot(x_values, y_values, "ko", alpha=0.5)
+                ax.set(xlabel=x_label, ylabel=y_label)
+                ax.ticklabel_format(
+                    axis="both",
+                    style="sci",
+                    scilimits=(0, 0),
+                    useMathText=True,
+                )
+                plt.show()
+        else:
+            x_label = ".".join(names[0])
+            x_values = values[..., 0]
 
             _, ax = plt.subplots(figsize=(7, 5), layout="constrained")
-            ax.plot(x_values, y_values, "ko", alpha=0.5)
-            ax.set(xlabel=x_label, ylabel=y_label)
+            ax.plot(x_values, [0.0] * len(x_values), "kx", alpha=0.5)
+            ax.set(xlabel=x_label, ylabel="", yticks=[])
             ax.ticklabel_format(
-                axis="both", style="sci", scilimits=(0, 0), useMathText=True
+                axis="x",
+                style="sci",
+                scilimits=(0, 0),
+                useMathText=True,
             )
             plt.show()
 
