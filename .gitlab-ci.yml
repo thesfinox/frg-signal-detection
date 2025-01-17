@@ -54,23 +54,22 @@ coverage:
       coverage_report:
         coverage_format: cobertura
         path: ${COVERAGE}
-
-pages:
-  tags:
-    - ccin2p3
-  stage: build
-  image: python:3.12
-  script:
-    - apt-get update
-    - apt-get install -y git
-    - python -m venv venv
-    - source venv/bin/activate
-    - python -m ensurepip --upgrade
-    - pip install -r requirements.txt
-    - pip install sphinx sphinx-rtd-theme
-    - ${SPHINXBUILD} -b ${BUILDFORMAT} ${DOCSDIR}/${SOURCEDIR} ${BUILDDIR}
-  artifacts:
-    paths:
-      - ${BUILDDIR}
-  only:
-    - main
+# pages:
+#   tags:
+#     - ccin2p3
+#   stage: build
+#   image: python:3.12
+#   script:
+#     - apt-get update
+#     - apt-get install -y git
+#     - python -m venv venv
+#     - source venv/bin/activate
+#     - python -m ensurepip --upgrade
+#     - pip install -r requirements.txt
+#     - pip install sphinx sphinx-rtd-theme
+#     - ${SPHINXBUILD} -b ${BUILDFORMAT} ${DOCSDIR}/${SOURCEDIR} ${BUILDDIR}
+#   artifacts:
+#     paths:
+#       - ${BUILDDIR}
+#   only:
+#     - main
