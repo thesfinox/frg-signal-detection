@@ -1,5 +1,7 @@
 # Do not consider the VSCode directory and log files
 .vscode/
+*.err
+*.out
 
 # Images and results
 plots/*
