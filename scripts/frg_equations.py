@@ -67,7 +67,7 @@ def main(a: argparse.Namespace) -> int | str:
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = (
         output_dir
-        / f"mp_frg_equations_u2={cfg.POT.U2_INIT}_u4={cfg.POT.U4_INIT}_u6={cfg.POT.U6_INIT}.json"
+        / f"mp_frg_equations_snr={cfg.SIG.SNR}_u2={cfg.POT.U2_INIT}_u4={cfg.POT.U4_INIT}_u6={cfg.POT.U6_INIT}.json"
     )
     payload = {
         "k2": k2.tolist(),
