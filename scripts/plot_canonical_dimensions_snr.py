@@ -51,7 +51,7 @@ def main(a: argparse.Namespace) -> int | str:
 
         # Find the value of the SNR
         name = f.stem.split("_")
-        name = [i for i in name if "SNR" in i][0]
+        name = [i for i in name if "snr" in i][0]
         snr.append(float(name.split("=")[-1]))
 
         # Parse the content of the file
@@ -81,7 +81,7 @@ def main(a: argparse.Namespace) -> int | str:
     ax.ticklabel_format(
         style="sci", axis="both", scilimits=(0, 0), useMathText=True
     )
-    ax.legend()
+    ax.legend(loc="lower left", bbox_to_anchor=(1.0, 0.0))
 
     # Save the file
     output_file = Path(a.output)
