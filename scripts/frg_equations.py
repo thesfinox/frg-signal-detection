@@ -97,7 +97,7 @@ if __name__ == "__main__":
         "--args",
         nargs="+",
         default=[],
-        help="Additional configuration arguments",
+        help="Additional configuration arguments (see YACS documentation)",
     )
     parser.add_argument(
         "-v", dest="verb", action="count", default=0, help="Verbosity level"
