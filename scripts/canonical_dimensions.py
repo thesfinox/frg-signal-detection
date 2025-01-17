@@ -63,7 +63,7 @@ def main(a: argparse.Namespace) -> int | str:
     # Save data
     output_dir = Path(cfg.DATA.OUTPUT_DIR)
     output_dir.mkdir(parents=True, exist_ok=True)
-    suffix = "analytic" if a.analytic else f"config={cfg_file.stem}"
+    suffix = "analytic" if a.analytic else f"snr={cfg.SIG.SNR}"
     output_file = output_dir / f"mp_canonical_dimensions_{suffix}.json"
     payload = {
         "k2": x.tolist(),
