@@ -3,6 +3,7 @@ Utility functions and helpers to handle configuration files and logging.
 """
 
 import logging
+import os
 from pathlib import Path
 
 import numpy as np
@@ -108,7 +109,7 @@ def load_data(cfg: CN) -> EmpiricalDistribution:
     EmpiricalDistribution
         The distribution
     """
-    data = Path(cfg.SIG.INPUT)
+    data = Path(os.path.expandvars(cfg.SIG.INPUT))
     if not data.exists():
         raise FileNotFoundError("Input data file %s does not exist!" % data)
 
