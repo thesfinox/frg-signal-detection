@@ -2,7 +2,7 @@
 """
 Functional Renormalization Group for Signal Detection
 
-Plot the phase space of the FRG flow: for each initial condition in the UV, we plot whether the trajectory ended in a symmetryc phase (u2 > 0) or not.
+Plot the phase space of the FRG flow: for each initial condition in the UV, we plot whether the trajectory ended in a symmetryc phase (kappa = 0) or not, using the Local Potential Approximation.
 """
 
 import argparse
@@ -21,9 +21,7 @@ plt.style.use("grayscale")
 
 __author__ = "Riccardo Finotello"
 __email__ = "riccardo.finotello@cea.fr"
-__description__ = (
-    "Plot the running coupling in a theory with given momenta distribution."
-)
+__description__ = "Plot the phase space of the FRG flow: for each initial condition in the UV, we plot whether the trajectory ended in a symmetryc phase (kappa = 0) or not, using the Local Potential Approximation."
 __epilog__ = "For bug reports and info: " + __author__ + " <" + __email__ + ">"
 
 
