@@ -49,15 +49,17 @@ def main(a: argparse.Namespace) -> int | str:
 
     # Distribution parameters
     x_max = cfg.POT.UV_SCALE
-    x = np.linspace(0.0, x_max, num=1000)
+    x_min = 1.0 / np.sqrt(cfg.DIST.NUM_SAMPLES)  # the smallest bin
 
     # Define the distribution
     if a.analytic:
+        x_min = 0.0  # analytic can go to zero
         dist = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
     else:
         dist = load_data(cfg)
 
     # Compute the canonical dimensions
+    x = np.linspace(x_min, x_max, num=1000)
     dimu2, dimu4, dimu6, _ = dist.canonical_dimensions(x).T
 
     # Save data
