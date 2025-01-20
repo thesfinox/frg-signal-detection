@@ -64,11 +64,11 @@ def main(a: argparse.Namespace) -> int | str:
     # Plot the results
     logger.debug("Plotting the canonical dimensions...")
     fig, ax = plt.subplots(figsize=(7, 5), layout="constrained")
-    order = np.argsort(snr)
-    snr = np.array(snr)[order]
-    dimu2 = np.array(dimu2)[order]
-    dimu4 = np.array(dimu4)[order]
-    dimu6 = np.array(dimu6)[order]
+    sorting_order = np.argsort(snr)
+    snr = np.array(snr)[sorting_order]
+    dimu2 = np.array(dimu2)[sorting_order]
+    dimu4 = np.array(dimu4)[sorting_order]
+    dimu6 = np.array(dimu6)[sorting_order]
     ax.plot(snr, dimu2, "r-", alpha=0.15)
     ax.plot(snr, dimu4, "g-", alpha=0.15)
     ax.plot(snr, dimu6, "b-", alpha=0.15)
