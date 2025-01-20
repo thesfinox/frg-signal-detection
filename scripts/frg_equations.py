@@ -10,6 +10,8 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
+
 from frg import MarchenkoPastur, get_cfg_defaults, get_logger
 from frg.utils.utils import load_data
 
@@ -47,9 +49,11 @@ def main(a: argparse.Namespace) -> int | str:
 
     # Distribution parameters
     x_uv = cfg.POT.UV_SCALE
+    x_ir = float(1 / np.sqrt(cfg.DIST.NUM_SAMPLES))  # stop at physical scale
 
     # Define the distribution
     if a.analytic:
+        x_ir = 0.0  # analytic can go to zero
         dist = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
     else:
         dist = load_data(cfg)
@@ -60,6 +64,8 @@ def main(a: argparse.Namespace) -> int | str:
         u2_init=cfg.POT.U2_INIT,
         u4_init=cfg.POT.U4_INIT,
         u6_init=cfg.POT.U6_INIT,
+        dx=0.1 / cfg.DIST.NUM_SAMPLES,
+        x_ir=x_ir
     ).T
 
     # Save data

@@ -126,6 +126,7 @@ class Distribution:
         u4_init: float,
         u6_init: float,
         dx: float = 1.0e-9,
+        x_ir: float = 0.0,
     ) -> ArrayLike:
         """
         Compute the FRG equations.
@@ -144,6 +145,8 @@ class Distribution:
             The initial value of the coupling :math:`u_6` at energy scale :math:`x`.
         dx : float
             The step size, by default 1.0e-9.
+        x_ir : float
+            The definition of IR scale (i.e. the scale :math:`k^2` to be considered low-energy), by default 0.0. It can be overridden to match physical assumptions (e.g. histogram binning, etc.).
 
         Returns
         -------
@@ -158,7 +161,7 @@ class Distribution:
         # Compute the energy scale
         k2, u2, u4, u6 = x, u2_init, u4_init, u6_init
         results = []
-        while k2 >= dx:
+        while k2 >= max(dx, x_ir):
             u2, u4, u6 = self._frg_equations_single(
                 x=k2,
                 u2=u2,
@@ -249,6 +252,7 @@ class Distribution:
         u4_init: float,
         u6_init: float,
         dx: float = 1.0e-9,
+        x_ir: float = 0.0,
     ) -> ArrayLike:
         """
         Compute the FRG equations in Local Potential Approximation.
@@ -267,6 +271,8 @@ class Distribution:
             The initial value of the coupling :math:`u_6` at energy scale :math:`x`.
         dx : float
             The step size, by default 1.0e-9.
+        x_ir : float
+            The definition of IR scale (i.e. the scale :math:`k^2` to be considered low-energy), by default 0.0. It can be overridden to match physical assumptions (e.g. histogram binning, etc.).
 
         Returns
         -------
@@ -281,7 +287,7 @@ class Distribution:
         # Compute the energy scale
         k2, kappa, u4, u6 = x, kappa_init, u4_init, u6_init
         results = []
-        while k2 >= dx:
+        while k2 >= max(dx, x_ir):
             kappa, u4, u6 = self._frg_equations_lpa_single(
                 x=k2,
                 kappa=kappa,
