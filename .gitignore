@@ -6,6 +6,8 @@
 # Images and results
 plots/*
 results/*
+plots*/*
+results*/*
 
 # Configuration files (except default)
 configs/*
