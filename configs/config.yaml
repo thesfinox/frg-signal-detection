@@ -8,7 +8,7 @@ DIST:
 PLOTS:
   OUTPUT_DIR: plots
 POT:
-  UV_SCALE: 1.0e-05
+  UV_SCALE: 1.0e-01
   KAPPA_INIT: 1.0e-09
   U2_INIT: 1.0e-05
   U4_INIT: 1.0e-05
