@@ -49,13 +49,15 @@ def main(a: argparse.Namespace) -> int | str:
         with open(str(d)) as f:
             data = json.load(f)
 
-        # Parse the content of the file
+        # Parse the content of the file (stop at the chosen scale)
+        k2 = np.array(data["k2"])
+        idx = np.argmin(np.abs(k2 - a.scale))
         snr.append(
             float(
                 [i for i in d.stem.split("_") if "snr" in i][0].split("=")[-1]
             )
         )
-        phase.append(True if np.abs(data["kappa"][-1]) < 1.0e-6 else False)
+        phase.append(True if np.abs(data["kappa"][idx]) < 1.0e-6 else False)
     snr = np.array(snr)
     phase = np.array(phase)
 
@@ -121,6 +123,12 @@ if __name__ == "__main__":
         description=__description__, epilog=__epilog__
     )
     parser.add_argument("data", nargs="+", help="Data file(s) in JSON format")
+    parser.add_argument(
+        "--scale",
+        type=float,
+        default=0.01,
+        help="The momentum scale at which to compute the canonical dimensions",
+    )
     parser.add_argument(
         "--output", default="mp_frg_equations.png", help="Output file"
     )

@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import matplotlib as mpl
+import numpy as np
 from matplotlib import pyplot as plt
 
 from frg import get_logger
@@ -50,6 +51,13 @@ def main(a: argparse.Namespace) -> int | str:
         kappa = data["kappa"]
         u4 = data["u4"]
         u6 = data["u6"]
+
+        # Reduce the number of points according to the chosen scale
+        k2 = np.array(data["k2"])
+        idx = np.argmin(np.abs(k2 - a.scale))
+        kappa = kappa[:idx]
+        u4 = u4[:idx]
+        u6 = u6[:idx]
 
         # Plot the dimensions
         logger.debug("Plotting the running coupling in file %s..." % d)
@@ -108,6 +116,12 @@ if __name__ == "__main__":
         description=__description__, epilog=__epilog__
     )
     parser.add_argument("data", nargs="+", help="Data file(s) in JSON format")
+    parser.add_argument(
+        "--scale",
+        type=float,
+        default=0.01,
+        help="The momentum scale at which to compute the canonical dimensions",
+    )
     parser.add_argument(
         "--output", default="mp_frg_equations.png", help="Output file"
     )
