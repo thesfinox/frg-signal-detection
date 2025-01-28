@@ -141,18 +141,18 @@ def main(a: argparse.Namespace) -> int | str:
     )
 
     # Create grid data
-    phase_interp = 2.0 * phase.astype("float") - 1.0
+    phase_interp = 2 * phase.astype("int") - 1
 
     plot = ax[3].tricontourf(
         coords[..., 0],
         coords[..., 1],
         phase_interp,
-        levels=1,
+        levels=[-1.0, 0.0, 2.0],
         colors=["r", "g"],
         alpha=0.5,
     )
     cbar = fig.colorbar(plot, ax=ax[3], fraction=0.045, pad=-0.25)
-    cbar.set_ticks([-0.5, 0.5])
+    cbar.set_ticks([-0.5, 1.0])
     cbar.set_ticklabels(["broken", "symmetric"])
     ax[3].set(xlabel=r"$u_{2}$", ylabel=r"$u_{4}$")
     ax[3].ticklabel_format(
@@ -166,12 +166,12 @@ def main(a: argparse.Namespace) -> int | str:
         coords[..., 0],
         coords[..., 2],
         phase_interp,
-        levels=1,
+        levels=[-1.0, 0.0, 2.0],
         colors=["r", "g"],
         alpha=0.5,
     )
     cbar = fig.colorbar(plot, ax=ax[4], fraction=0.045, pad=-0.25)
-    cbar.set_ticks([-0.5, 0.5])
+    cbar.set_ticks([-0.5, 1.0])
     cbar.set_ticklabels(["broken", "symmetric"])
     ax[4].set(xlabel=r"$u_{2}$", ylabel=r"$u_{6}$")
     ax[4].ticklabel_format(
@@ -185,12 +185,12 @@ def main(a: argparse.Namespace) -> int | str:
         coords[..., 1],
         coords[..., 2],
         phase_interp,
-        levels=1,
+        levels=[-1.0, 0.0, 2.0],
         colors=["r", "g"],
         alpha=0.5,
     )
     cbar = fig.colorbar(plot, ax=ax[5], fraction=0.045, pad=-0.25)
-    cbar.set_ticks([-0.5, 0.5])
+    cbar.set_ticks([-0.5, 1.0])
     cbar.set_ticklabels(["broken", "symmetric"])
     ax[5].set(xlabel=r"$u_{4}$", ylabel=r"$u_{6}$")
     ax[5].ticklabel_format(
