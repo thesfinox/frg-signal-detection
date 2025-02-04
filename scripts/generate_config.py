@@ -11,6 +11,7 @@ import sys
 from itertools import combinations
 from pathlib import Path
 
+import numpy as np
 from scipy.stats import qmc
 
 from frg.utils.utils import get_cfg_defaults, get_logger
@@ -47,7 +48,9 @@ def main(a: argparse.Namespace) -> int | str:
     params = Path(a.params)
     if not params.exists():
         logger.error("Parameters file %s does not exist!", a.params)
-        raise FileNotFoundError("Parameters file %s does not exist!" % a.params)
+        raise FileNotFoundError(
+            "Parameters file %s does not exist!" % a.params
+        )
     logger.debug("Opening parameters file %s", a.params)
     with open(str(params)) as f:
         params = json.load(f)
@@ -63,17 +66,21 @@ def main(a: argparse.Namespace) -> int | str:
             l_bounds.append(bounds[0])
             u_bounds.append(bounds[1])
 
-    sampler = qmc.LatinHypercube(d=len(names), seed=a.seed)
-    values = sampler.random(n=a.n_samples)
-    values = qmc.scale(values, l_bounds, u_bounds)
+    if len(names) > 1:
+        sampler = qmc.LatinHypercube(d=len(names), seed=a.seed)
+        values = sampler.random(n=a.n_samples)
+        values = qmc.scale(values, l_bounds, u_bounds)
+    else:
+        values = np.linspace(l_bounds[0], u_bounds[0], num=a.n_samples)
 
     # Create the configurations
-    for v in values:
+    for value in values:
         cfg_copy = cfg.clone()
         output_name = f"{cfg_file.stem}_"
         for i, name in enumerate(names):
-            cfg_copy[name[0]][name[1]] = float(v[i])
-            output_name += f"{name[0]}.{name[1]}={v[i]:.2g}"
+            v = value if len(names) <= 1 else value[i]
+            cfg_copy[name[0]][name[1]] = float(v)
+            output_name += f"{name[0]}.{name[1]}={v}"
             if i < len(names) - 1:
                 output_name += "_"
         cfg_copy.freeze()
