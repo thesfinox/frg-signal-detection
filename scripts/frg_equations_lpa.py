@@ -65,7 +65,7 @@ def main(a: argparse.Namespace) -> int | str:
         u4_init=cfg.POT.U4_INIT,
         u6_init=cfg.POT.U6_INIT,
         dx=0.1 / cfg.DIST.NUM_SAMPLES,
-        x_ir=x_ir
+        x_ir=x_ir,
     ).T
 
     # Save data

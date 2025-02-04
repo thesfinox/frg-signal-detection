@@ -48,9 +48,7 @@ def main(a: argparse.Namespace) -> int | str:
     params = Path(a.params)
     if not params.exists():
         logger.error("Parameters file %s does not exist!", a.params)
-        raise FileNotFoundError(
-            "Parameters file %s does not exist!" % a.params
-        )
+        raise FileNotFoundError("Parameters file %s does not exist!" % a.params)
     logger.debug("Opening parameters file %s", a.params)
     with open(str(params)) as f:
         params = json.load(f)
