@@ -2,7 +2,7 @@
 """
 Plot SNR response
 
-Plot the canonincal dimensions at a given scale for different values of the signal-to-noise ratio.
+Plot the canonical dimensions at a given scale for different values of the signal-to-noise ratio.
 """
 
 import argparse
@@ -22,7 +22,7 @@ plt.style.use("grayscale")
 
 __author__ = "Riccardo Finotello"
 __email__ = "riccardo.finotello@cea.fr"
-__description__ = "Plot the canonincal dimensions at a given scale for different values of the signal-to-noise ratio."
+__description__ = "Plot the canonical dimensions at a given scale for different values of the signal-to-noise ratio."
 __epilog__ = "For bug reports and info: " + __author__ + " <" + __email__ + ">"
 
 
