@@ -65,7 +65,11 @@ def main(a: argparse.Namespace) -> int | str:
     # Save data
     output_dir = Path(cfg.DATA.OUTPUT_DIR)
     output_dir.mkdir(parents=True, exist_ok=True)
-    suffix = "analytic" if a.analytic else f"snr={cfg.SIG.SNR}"
+    suffix = f"snr={cfg.SIG.SNR}"
+    if a.suffix.lower() == "var":
+        suffix = f"var={cfg.DIST.SIGMA}"
+    if a.analytic:
+        suffix = "analytic"
     output_file = output_dir / f"mp_canonical_dimensions_{suffix}.json"
     payload = {
         "k2": x.tolist(),
@@ -91,6 +95,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--print_config", action="store_true", help="Print configuration"
+    )
+    parser.add_argument(
+        "--suffix",
+        default="snr",
+        choices=["snr", "var"],
+        help="Type of suffix used in the output files",
     )
     parser.add_argument(
         "--args",
