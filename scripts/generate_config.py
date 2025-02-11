@@ -54,7 +54,6 @@ def main(a: argparse.Namespace) -> int | str:
         params = json.load(f)
 
     # Generate the configurations
-    logger.info("Generating LHS samples...")
     names = []
     l_bounds = []
     u_bounds = []
@@ -65,10 +64,12 @@ def main(a: argparse.Namespace) -> int | str:
             u_bounds.append(bounds[1])
 
     if len(names) > 1:
+        logger.info("Generating LHS samples...")
         sampler = qmc.LatinHypercube(d=len(names), seed=a.seed)
         values = sampler.random(n=a.n_samples)
         values = qmc.scale(values, l_bounds, u_bounds)
     else:
+        logger.info("Generating linear samples...")
         values = np.linspace(l_bounds[0], u_bounds[0], num=a.n_samples)
 
     # Create the configurations
