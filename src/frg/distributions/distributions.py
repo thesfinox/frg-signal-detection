@@ -468,7 +468,8 @@ class EmpiricalDistribution(Distribution):
         ArrayLike
             The eigenvalues of the distribution.
         """
-        _, S, _ = np.linalg.svd(X, full_matrices=False)
+        _, S, evcT = np.linalg.svd(X, full_matrices=False)
+        self.eigenvectors_ = evcT.T
         return S.ravel() ** 2 / (self.n_samples - 1)
 
     def _evl_cov(self, cov: ArrayLike) -> ArrayLike:
@@ -485,7 +486,9 @@ class EmpiricalDistribution(Distribution):
         ArrayLike
             The eigenvalues of the distribution.
         """
-        return np.linalg.eigvalsh(cov)
+        evl, evc = np.linalg.eigh(cov)
+        self.eigenvectors_ = evc
+        return evl
 
     @property
     def eigenvalues_(self) -> ArrayLike:
@@ -505,9 +508,13 @@ class EmpiricalDistribution(Distribution):
         eigenvalues = (
             self._evl_cov(self.data) if self._iscov else self._evl(self.data)
         )
-        return np.sort(eigenvalues)
 
-    def _find_spikes(self, eigenvalues: ArrayLike) -> ArrayLike:
+        # Sort the eigenvalues
+        idx = np.argsort(eigenvalues)
+        self.eigenvectors_[:, idx]
+        return eigenvalues[idx]
+
+    def find_spikes(self, eigenvalues: ArrayLike) -> ArrayLike:
         """
         Find the spikes in the eigenvalues.
 
@@ -552,7 +559,7 @@ class EmpiricalDistribution(Distribution):
 
         # Remove the spikes from the eigenvalues
         eigenvalues = self.eigenvalues_
-        self.eigenvalues = eigenvalues[: self._find_spikes(eigenvalues)]
+        self.eigenvalues = eigenvalues[: self.find_spikes(eigenvalues)]
 
         # Compute the momenta
         self.momenta = 1.0 / self.eigenvalues
