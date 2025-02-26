@@ -77,9 +77,10 @@ def main(a: argparse.Namespace) -> int | str:
     # Plot the results
     logger.debug("Plotting the values of the eigenvector distribution...")
     fig, ax = plt.subplots(figsize=(7, 5), layout="constrained")
-    snr = np.array(snr)
-    mode = np.array(mode)
-    width = np.array(width)
+    idx = np.argsort(np.array(snr))
+    snr = np.array(snr)[idx]
+    mode = np.array(mode)[idx]
+    width = np.array(width)[idx]
     mode_plot = ax.plot(snr, mode, "k-", label="mode")
     ax.set(xlabel=r"signal-to-noise ratio ($\beta$)", ylabel="mode")
     ax.ticklabel_format(
