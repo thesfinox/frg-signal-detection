@@ -14,7 +14,7 @@ stages:
 
 tests:
   tags:
-    - ccin2p3
+    - python
   stage: test
   image: python:3.12
   script:
@@ -34,7 +34,7 @@ tests:
 
 coverage:
   tags:
-    - ccin2p3
+    - python
   stage: test
   image: python:3.12
   script:
@@ -54,9 +54,10 @@ coverage:
       coverage_report:
         coverage_format: cobertura
         path: ${COVERAGE}
+
 # pages:
 #   tags:
-#     - ccin2p3
+#     - python
 #   stage: build
 #   image: python:3.12
 #   script:
