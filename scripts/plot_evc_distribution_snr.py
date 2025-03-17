@@ -96,7 +96,7 @@ def main(a: argparse.Namespace) -> int | str:
         handles=[mode_plot[0], width_plot[0]],
         labels=["mode", "width"],
         loc="lower left",
-        bbox_to_anchor=(1.0, 0.0),
+        bbox_to_anchor=(1.1, 0.0),
     )
 
     # Save the file
