@@ -1,11 +1,22 @@
-# Functional Renormalization Group for Signal Detection
+# Multi-noise Components and Finite Size Effects in Nearly Continuous Spectra
 
-Authors: Riccardo Finotello, Vincent Lahoche, Dine Ousmane Samary
-Code: Riccardo Finotello <riccardo.finotello@cea.fr>
+- **Riccardo Finotello** - Université Paris Saclay, CEA, *Service de Génie Logiciel et de Simulation* (SGLS), Gif-sur-Yvette, F-91191, France
+- **Vincent Lahoche** - Université Paris Saclay, CEA, LIST, Palaiseau, F-91120, France
+- **Dine Ousmane Samary** - Université Paris Saclay, CEA, LIST, Palaiseau, F-91120, France
 
 ## Abstract
 
-This is a work in progress to develop a functional renormalization group (FRG) approach for the definition of limit of detection.
+![graphical_abstract](./docs/source/_static/snr_localization.png)
+
+Signal detection is one of the main challenges of data science, as noise corruption may corrupt measurements and hinder the discovery of significant pieces of data.
+A wide range of techniques aimed at extracting the relevant degrees of freedom from data has been developed over the years.
+However, some issues remain difficult.
+It is notably the case of signal detection in almost continuous spectra, when the signal-to-noise ratio is small enough.
+Following recent advancements, we propose to tackle this issue by analysing the properties of the underlying field theory arising as a kind of maximal entropy distribution close to the boundary of the spectrum.
+Nearly continuous spectra provide an intrinsic scaling law for field and couplings, depending on the energy scale.
+The enable constructing a non-conventional renormalization group which progressively integrates degrees of freedom of the spectrum.
+In this paper we provide an analysis of the properties of this renormalization group in the Gaussian regime and beyond.
+We also propose a method for estimating the number of noise components and define a limit of detection in a general nearly continuous spectrum using the renormalization group.
 
 ## Requirements
 
