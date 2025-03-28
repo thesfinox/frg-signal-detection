@@ -5,11 +5,14 @@ The work is based on `recent theoretical advancements <https://arxiv.org/abs/220
 """
 
 # Import the modules
-from frg.distributions.distributions import MarchenkoPastur
+from frg.distributions.distributions import (
+    EmpiricalDistribution,
+    MarchenkoPastur,
+)
 from frg.utils.utils import get_cfg_defaults, get_logger
 
 # Set the version number
-__version__ = "0.9.0b"
+__version__ = "v1.0.0"
 
 # Set the author
 __author__ = "Riccardo Finotello"
@@ -21,6 +24,7 @@ __url__ = ""
 
 # Package imports
 __all__ = [
+    "EmpiricalDistribution",
     "MarchenkoPastur",
     "get_cfg_defaults",
     "get_logger",
