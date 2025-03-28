@@ -12,18 +12,21 @@ stages:
   - build
   - deploy
 
+image: python:3.12
+
+before_script:
+  - apt-get update
+  - apt-get install -y git
+  - python -m venv venv
+  - source venv/bin/activate
+  - python -m ensurepip --upgrade
+  - pip install -r requirements.txt
+
 tests:
   tags:
     - python
   stage: test
-  image: python:3.12
   script:
-    - apt-get update
-    - apt-get install -y git
-    - python -m venv venv
-    - source venv/bin/activate
-    - python -m ensurepip --upgrade
-    - pip install -r requirements.txt
     - pip install pytest
     - pytest --junitxml=${REPORT}
   artifacts:
@@ -36,14 +39,7 @@ coverage:
   tags:
     - python
   stage: test
-  image: python:3.12
   script:
-    - apt-get update
-    - apt-get install -y git
-    - python -m venv venv
-    - source venv/bin/activate
-    - python -m ensurepip --upgrade
-    - pip install -r requirements.txt
     - pip install pytest pytest-cov
     - pytest --cov-report term --cov-report xml:${COVERAGE} --cov=src/ptdismap tests
   coverage: '/TOTAL.*\s+(\d+%)$/'
@@ -55,22 +51,15 @@ coverage:
         coverage_format: cobertura
         path: ${COVERAGE}
 
-# pages:
-#   tags:
-#     - python
-#   stage: build
-#   image: python:3.12
-#   script:
-#     - apt-get update
-#     - apt-get install -y git
-#     - python -m venv venv
-#     - source venv/bin/activate
-#     - python -m ensurepip --upgrade
-#     - pip install -r requirements.txt
-#     - pip install sphinx sphinx-rtd-theme
-#     - ${SPHINXBUILD} -b ${BUILDFORMAT} ${DOCSDIR}/${SOURCEDIR} ${BUILDDIR}
-#   artifacts:
-#     paths:
-#       - ${BUILDDIR}
-#   only:
-#     - main
+pages:
+  tags:
+    - python
+  stage: build
+  script:
+    - pip install sphinx sphinx-rtd-theme
+    - ${SPHINXBUILD} -b ${BUILDFORMAT} ${DOCSDIR}/${SOURCEDIR} ${BUILDDIR}
+  artifacts:
+    paths:
+      - ${BUILDDIR}
+  only:
+    - main
