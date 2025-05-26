@@ -8,6 +8,7 @@ plots/*
 results/*
 plots*/*
 results*/*
+old_runs
 
 # Configuration files (except default)
 configs/*

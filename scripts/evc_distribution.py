@@ -44,7 +44,7 @@ def main(a: argparse.Namespace) -> int | str:
     # Run the simulation
     logger.info("Computing the distribution of the eigenvectors...")
     dist = load_data(cfg)
-    evl = dist.eigenvalues_  # compute eigenvalues
+    evl = dist.eigenvalues  # compute eigenvalues
     evc = dist.eigenvectors_  # compute eigenvectors
 
     # Find the spikes

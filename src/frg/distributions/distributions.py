@@ -9,7 +9,8 @@ from warnings import warn
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.integrate import quad
-from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.special import ndtr
+from scipy.stats import gaussian_kde
 from skimage.transform import resize
 from yacs.config import CfgNode
 
@@ -17,17 +18,143 @@ from yacs.config import CfgNode
 class Distribution:
     """Abstract base class for distributions"""
 
-    def ipdf(self, x: float | ArrayLike) -> float | ArrayLike:
-        """Compute the PDF of the inverse distribution."""
+    def __init__(self):
+        self.m2 = np.inf
+        self.lminus = -np.inf
+        self.lplus = np.inf
+
+    def pdf(self, x: float | ArrayLike) -> float | ArrayLike:
+        """Compute the PDF of the random variable."""
         raise NotImplementedError
+
+    def cdf(self, x: float | ArrayLike) -> float | ArrayLike:
+        """Compute the CDF of the random variable."""
+        raise NotImplementedError
+
+    def dpdf(
+        self, x: float | ArrayLike, eps: float = 1.0e-9
+    ) -> float | ArrayLike:
+        """
+        Compute the derivative of the PDF.
+
+        Parameters
+        ----------
+        x : float | ArrayLike
+            The point to compute the derivative of the PDF.
+        eps : float
+            The step to compute the incremental ratio, by default :math:`10^{-9}`.
+
+        Returns
+        -------
+        float | ArrayLike
+            The value(s) of the derivative of the PDF.
+        """
+        if not np.isscalar(x):
+            return np.vectorize(self.dpdf, otypes=[np.float64])(x)
+        return self._diff(self.pdf, x, eps)
+
+    def ipdf(self, x: float | ArrayLike) -> float | ArrayLike:
+        """
+        Compute the PDF of the inverse of the random variable.
+
+        Parameters
+        ----------
+        x : float | ArrayLike
+            The value(s) at which to evaluate the PDF.
+
+        Returns
+        -------
+        float | ArrayLike
+            The value(s) of the PDF at the given value(s).
+        """
+        # If x is not a scalar, then vectorize the function
+        if not np.isscalar(x):
+            return np.vectorize(self.ipdf, otypes=[np.float64])(x)
+
+        # In order to reproduce the momentum distribution, we need to consider
+        # a change of variable:
+        #
+        # 1) we consider lambda' = lambda - self.lminus,
+        #
+        # where lambda is an eigenvalue.
+        #
+        # This first change is to ensure that the distribution is shifted to
+        # the origin (i.e. the lowest eigenvalue is zero).
+        #
+        # We then consider the change of variable:
+        #
+        # 2) lambda' = 1 / (k^2 + m^2),
+        #
+        # in order to switch to momenta (shifted by the mass m^2, which is the
+        # inverse of the largest eigenvalue).
+        return self.pdf(1 / (x + self.m2) + self.lminus) / (x + self.m2) ** 2
 
     def icdf(self, x: float | ArrayLike) -> float | ArrayLike:
-        """Compute the CDF of the inverse distribution."""
-        raise NotImplementedError
+        """
+        Compute the CDF of the inverse of the random variable.
 
-    def dipdf(self, x: float | ArrayLike) -> float | ArrayLike:
-        """Compute the derivative of the PDF of the inverse distribution."""
-        raise NotImplementedError
+        Parameters
+        ----------
+        x : float | ArrayLike
+            The value(s) at which to evaluate the CDF.
+
+        Returns
+        -------
+        float | ArrayLike
+            The value(s) of the CDF at the given value(s).
+        """
+        # If x is not a scalar, then vectorize the function
+        if not np.isscalar(x):
+            return np.vectorize(self.icdf, otypes=[np.float64])(x)
+
+        if x <= 0.0:
+            return 0.0
+        return quad(self.ipdf, 0.0, x)[0]
+
+    def dipdf(
+        self, x: float | ArrayLike, eps: float = 1.0e-9
+    ) -> float | ArrayLike:
+        """
+        Compute the derivative of the PDF of the inverse of the random variable.
+
+        Parameters
+        ----------
+        x : float | ArrayLike
+            The value(s) at which to evaluate the derivative.
+        eps : float
+            The step to compute the incremental ratio, by default :math:`10^{-9}`.
+
+        Returns
+        -------
+        float | ArrayLike
+            The value(s) of the derivative of the inverse PDF at the given value(s).
+        """
+        # If x is not a scalar, then vectorize the function
+        if not np.isscalar(x):
+            return np.vectorize(self.dipdf, otypes=[np.float64])(x)
+        return self._diff(self.ipdf, x, eps)
+
+    def _diff(self, func: Callable, x: float, eps: float = 1.0e-9) -> float:
+        """
+        Compute a derivative of a function.
+
+        Parameters
+        ----------
+        func: Callable
+            The function to evaluate.
+        x : float
+            The value at which to evaluate the derivative.
+        eps : float
+            The step to compute the incremental ratio, by default :math:`10^{-9}`.
+
+        Returns
+        -------
+        float
+            The value of the derivative of the PDF at the given value.
+        """
+        num = func(x + eps) - func(x - eps)
+        den = 2.0 * eps
+        return num / den if den != 0.0 else 0.0
 
     def canonical_dimensions(self, x: float) -> ArrayLike:
         """
@@ -430,7 +557,7 @@ class EmpiricalDistribution(Distribution):
         X : ArrayLike
             The signal to add.
         snr : float
-            The signal-to-noise ratio.
+            The signal-to-noise ratio, by default 0.0.
 
         Returns
         -------
@@ -454,7 +581,9 @@ class EmpiricalDistribution(Distribution):
 
         return self
 
-    def _evl(self, X: ArrayLike) -> ArrayLike:
+    def _compute_eigenvalues(
+        self, X: ArrayLike, cov: bool = False
+    ) -> ArrayLike:
         """
         Get the eigenvalues of the covariance matrix of the data (from the singular values of the data).
 
@@ -462,36 +591,25 @@ class EmpiricalDistribution(Distribution):
         ----------
         X : ArrayLike
             The data.
+        cov : bool
+            Data are a covariance matrix, by default `False`.
 
         Returns
         -------
         ArrayLike
             The eigenvalues of the distribution.
         """
-        _, S, evcT = np.linalg.svd(X, full_matrices=False)
-        self.eigenvectors_ = evcT.T
-        return S.ravel() ** 2 / (self.n_samples - 1)
-
-    def _evl_cov(self, cov: ArrayLike) -> ArrayLike:
-        """
-        Get the eigenvalues of the covariance matrix.
-
-        Parameters
-        ----------
-        cov : ArrayLike
-            The covariance matrix.
-
-        Returns
-        -------
-        ArrayLike
-            The eigenvalues of the distribution.
-        """
-        evl, evc = np.linalg.eigh(cov)
-        self.eigenvectors_ = evc
-        return evl
+        if cov:
+            evl, evc = np.linalg.eigh(X)
+            self.eigenvectors_ = evc
+            return evl
+        else:
+            _, S, evcT = np.linalg.svd(X, full_matrices=False)
+            self.eigenvectors_ = evcT.T
+            return S.ravel() ** 2 / (self.n_samples - 1)
 
     @property
-    def eigenvalues_(self) -> ArrayLike:
+    def eigenvalues(self) -> ArrayLike:
         """
         Compute the eigenvalues of the distribution.
 
@@ -505,16 +623,14 @@ class EmpiricalDistribution(Distribution):
         ArrayLike
             The eigenvalues of the distribution, sorted in ascending order.
         """
-        eigenvalues = (
-            self._evl_cov(self.data) if self._iscov else self._evl(self.data)
-        )
+        eigenvalues = self._compute_eigenvalues(self.data, cov=self._iscov)
 
         # Sort the eigenvalues
         idx = np.argsort(eigenvalues)
         self.eigenvectors_[:, idx]
         return eigenvalues[idx]
 
-    def find_spikes(self, eigenvalues: ArrayLike) -> ArrayLike:
+    def find_spikes(self, eigenvalues: ArrayLike) -> int:
         """
         Find the spikes in the eigenvalues.
 
@@ -525,8 +641,8 @@ class EmpiricalDistribution(Distribution):
 
         Returns
         -------
-        ArrayLike
-            The indices of the spikes.
+        int
+            The index of the first spike.
         """
         dx = 1 / np.sqrt(len(eigenvalues))
 
@@ -538,16 +654,19 @@ class EmpiricalDistribution(Distribution):
 
         return len(eigenvalues) - int(idx)
 
-    def fit(self, X: ArrayLike | None = None, snr: float = 0.0) -> Self:
+    def fit(
+        self, X: ArrayLike | None = None, snr: float = 0.0, fac: float = 0.2
+    ) -> Self:
         """
         Add the signal (if provided) and compute the eigenvalue distribution.
 
         Parameters
         ----------
-        X : ArrayLike
+        X : ArrayLike, optional
             The signal to add.
         snr : float
             The signal-to-noise ratio.
+        fac : float
 
         Returns
         -------
@@ -557,38 +676,28 @@ class EmpiricalDistribution(Distribution):
         if X is not None:
             self.add_signal(X, snr=snr)
 
-        # Remove the spikes from the eigenvalues
-        eigenvalues = self.eigenvalues_
-        self.eigenvalues = eigenvalues[: self.find_spikes(eigenvalues)]
-
-        # Compute the momenta
-        self.momenta = 1.0 / self.eigenvalues
-        self.momenta -= np.min(self.momenta)  # shift to zero
-
-        # Create a histogram
-        dx = 1.0 / np.sqrt(self.data.shape[0])
-        dens, edges = np.histogram(
-            self.momenta,
-            bins=np.arange(0.0, np.max(self.momenta) + dx, dx),
-            density=True,
+        # Remove the spikes from the eigenvalues and fit a KDE
+        eigenvalues = self.eigenvalues
+        spikes = self.find_spikes(eigenvalues)
+        self.eigenvalues_ = eigenvalues[:spikes]
+        self.eigenvectors_ = self.eigenvectors_[:, :spikes]
+        self.kde = gaussian_kde(
+            self.eigenvalues_,
+            bw_method=lambda obj: np.power(obj.n, -1.0 / (obj.d + 4.0)) * fac,
         )
 
-        # Create the PDF
-        self._ipdf = InterpolatedUnivariateSpline(
-            edges[:-1] + dx / 2.0,
-            dens,
-            k=1,
-            ext="zeros",
-        )
-        self._dipdf = self._ipdf.derivative()
-        self._icdf = self._ipdf.antiderivative()
+        # Compute the min and max points
+        self.lminus = self.sigma**2 * (1.0 - np.sqrt(self.ratio)) ** 2
+        self.lplus = max(self.eigenvalues_)
+        self.m2 = 1.0 / (self.lplus - self.lminus)
+        self.norm = self.kde.integrate_box_1d(self.lminus, self.lplus)
 
         self._fitted = True
         return self
 
-    def ipdf(self, x: float | ArrayLike) -> ArrayLike:
+    def pdf(self, x: float | ArrayLike) -> ArrayLike:
         """
-        Compute the PDF of the inverse Marchenko-Pastur distribution.
+        Compute the PDF of the eigenvalue distribution.
 
         Parameters
         ----------
@@ -597,38 +706,24 @@ class EmpiricalDistribution(Distribution):
 
         Returns
         -------
-        ArrayLike
+        float | ArrayLike
             The value(s) of the PDF at the given value(s).
         """
         if not self._fitted:
             raise ValueError(
                 "The distribution must be fitted before calling ipdf! Please call ``self.fit()`` first."
             )
-        return self._ipdf(x)
+        if not np.isscalar(x):
+            return np.vectorize(self.pdf, otypes=[np.float64])(x)
 
-    def dipdf(self, x: float | ArrayLike) -> ArrayLike:
+        if (x <= self.lminus) or (x >= self.lplus):
+            return 0.0
+
+        return float(self.kde.pdf(x)) / self.norm
+
+    def cdf(self, x: float | ArrayLike) -> float | ArrayLike:
         """
-        Compute the derivative of the PDF of the inverse Marchenko-Pastur distribution.
-
-        Parameters
-        ----------
-        x : float | ArrayLike
-            The value(s) at which to evaluate the derivative of the PDF.
-
-        Returns
-        -------
-        ArrayLike
-            The value(s) of the derivative of the PDF at the given value(s).
-        """
-        if not self._fitted:
-            raise ValueError(
-                "The distribution must be fitted before calling dipdf! Please call ``self.fit()`` first."
-            )
-        return self._dipdf(x)
-
-    def icdf(self, x: float | ArrayLike) -> ArrayLike:
-        """
-        Compute the CDF of the inverse Marchenko-Pastur distribution.
+        Compute the CDF of the eigenvalue distribution.
 
         Parameters
         ----------
@@ -637,24 +732,53 @@ class EmpiricalDistribution(Distribution):
 
         Returns
         -------
-        ArrayLike
+        float | ArrayLike
             The value(s) of the CDF at the given value(s).
         """
         if not self._fitted:
             raise ValueError(
-                "The distribution must be fitted before calling icdf! Please call ``self.fit()`` first."
+                "The distribution must be fitted before calling ipdf! Please call ``self.fit()`` first."
             )
-        if np.isscalar(x):
-            if x <= 0.0:
-                return 0.0
-            if x >= max(self.momenta):
-                return 1.0
-            return self._icdf(x)
-        else:
-            icdf = self._icdf(x)
-            icdf[x <= 0.0] = 0.0
-            icdf[x >= max(self.momenta)] = 1.0
-            return icdf
+        if not np.isscalar(x):
+            return np.vectorize(self.cdf, otypes=[np.float64])(x)
+
+        z = np.ravel(x - self.kde.dataset) / self.kde.factor
+        return ndtr(z).mean()
+
+    def icdf(self, x: float | ArrayLike) -> float | ArrayLike:
+        """
+        Compute the CDF of the distribution of the inverse of the eigenvalues.
+
+        Parameters
+        ----------
+        x : float | ArrayLike
+            The value(s) at which to evaluate the CDF of the momenta.
+
+        Returns
+        -------
+        float | ArrayLike
+            The value(s) of the CDF of the momenta
+        """
+        if not self._fitted:
+            raise ValueError(
+                "The distribution must be fitted before calling ipdf! Please call ``self.fit()`` first."
+            )
+        if not np.isscalar(x):
+            return np.vectorize(self.icdf, otypes=[np.float64])(x)
+
+        # Let
+        #     lambda' = lambda - lambda_-
+        # and
+        #     lambda' = 1 / (k^2 + m^2) <==> k^2 = 1 / lambda' - self.m2.
+        #
+        # We can then compute the CDF of the random variable K^2 by computing:
+        #
+        #    P(K^2 < k^2) = P(1 / lambda' < k^2 + m^2)
+        #                 = P(lambda' > 1 / (k^2 + m^2))
+        #                 = P(lambda > lambda_- + 1 / (k^2 + m^2))
+        #                 = 1 - P(lambda < lambda_- + 1 / (k^2 + m^2))
+        #                 = 1 - CDF(lambda_- + 1 / (k^2 + m^2))
+        return 1.0 - self.cdf(self.lminus + 1.0 / (x + self.m2))
 
 
 class MarchenkoPastur(Distribution):
@@ -772,131 +896,3 @@ class MarchenkoPastur(Distribution):
         if x0 <= self.lminus:
             x0 = self.lminus
         return quad(lambda y: self.pdf(y), x0, x)[0]
-
-    def _diff(self, func: Callable, x: float, eps: float) -> float:
-        """
-        Compute a derivative.
-
-        Parameters
-        ----------
-        func: Callable
-            The function to evaluate.
-        x : float
-            The value at which to evaluate the derivative.
-        eps : float
-            The value of the small variation, by default 1.0e-9.
-
-        Returns
-        -------
-        float
-            The value of the derivative of the PDF at the given value.
-        """
-        num = func(x + eps) - func(x - eps)
-        den = 2.0 * eps
-        return num / den if den != 0.0 else 0.0
-
-    def dpdf(
-        self,
-        x: float | ArrayLike,
-        eps: float = 1.0e-10,
-    ) -> float | ArrayLike:
-        """
-        Compute the derivative of the PDF of the Marchenko-Pastur distribution.
-
-        Parameters
-        ----------
-        x : float | ArrayLike
-            The value(s) at which to evaluate the derivative.
-        eps : float
-            The value of the small variation, by default 1.0e-10.
-
-        Returns
-        -------
-        float | ArrayLike
-            The value(s) of the derivative of the PDF at the given value(s).
-        """
-        # If x is not a scalar, then vectorize the function
-        if not np.isscalar(x):
-            return np.vectorize(self.dpdf, otypes=[np.float64])(x)
-        return self._diff(self.pdf, x, eps)
-
-    def ipdf(self, x: float | ArrayLike) -> float | ArrayLike:
-        """
-        Compute the PDF of the inverse Marchenko-Pastur distribution.
-
-        Parameters
-        ----------
-        x : float | ArrayLike
-            The value(s) at which to evaluate the PDF.
-
-        Returns
-        -------
-        float | ArrayLike
-            The value(s) of the PDF at the given value(s).
-        """
-        # If x is not a scalar, then vectorize the function
-        if not np.isscalar(x):
-            return np.vectorize(self.ipdf, otypes=[np.float64])(x)
-
-        # In order to reproduce the momentum distribution, we need to consider
-        # a change of variable:
-        #
-        # 1) we consider lambda' = lambda - self.lminus,
-        #
-        # where lambda is an eigenvalue.
-        #
-        # This first change is to ensure that the distribution is shifted to
-        # the origin (i.e. the lowest eigenvalue is zero).
-        #
-        # We then consider the change of variable:
-        #
-        # 2) lambda' = 1 / (k^2 + m^2),
-        #
-        # in order to switch to momenta (shifted by the mass m^2, which is the
-        # inverse of the largest eigenvalue).
-        return self.pdf(1 / (x + self.m2) + self.lminus) / (x + self.m2) ** 2
-
-    def icdf(self, x: float | ArrayLike) -> float | ArrayLike:
-        """
-        Compute the CDF of the inverse Marchenko-Pastur distribution.
-
-        Parameters
-        ----------
-        x : float | ArrayLike
-            The value(s) at which to evaluate the CDF.
-
-        Returns
-        -------
-        float | ArrayLike
-            The value(s) of the CDF at the given value(s).
-        """
-        # If x is not a scalar, then vectorize the function
-        if not np.isscalar(x):
-            return np.vectorize(self.icdf, otypes=[np.float64])(x)
-
-        if x <= 0.0:
-            return 0.0
-        return quad(self.ipdf, 0.0, x)[0]
-
-    def dipdf(
-        self, x: float | ArrayLike, eps: float = 1.0e-10
-    ) -> float | ArrayLike:
-        """
-        Compute the derivative of the inverse PDF of the Marchenko-Pastur distribution.
-
-        Parameters
-        ----------
-        x : float | ArrayLike
-            The value(s) at which to evaluate the derivative.
-        eps : float
-            The value of the small variation, by default 1.0e-10.
-
-        Returns
-        -------
-        float | ArrayLike
-            The value(s) of the derivative of the inverse PDF at the given value(s).
-        """
-        # If x is not a scalar, then vectorize the function
-        if not np.isscalar(x):
-            return np.vectorize(self.dipdf, otypes=[np.float64])(x)
-        return self._diff(self.ipdf, x, eps)

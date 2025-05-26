@@ -107,8 +107,6 @@ class TestEmpiricalDistribution:
         emp.fit(X, snr=0.5)
         assert hasattr(emp, "eigenvalues")
         assert isinstance(emp.eigenvalues, np.ndarray)
-        assert hasattr(emp, "momenta")
-        assert isinstance(emp.momenta, np.ndarray)
         assert hasattr(emp, "ipdf")
         assert hasattr(emp, "dipdf")
         assert hasattr(emp, "icdf")
