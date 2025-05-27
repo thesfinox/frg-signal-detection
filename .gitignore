@@ -9,6 +9,7 @@ results/*
 plots*/*
 results*/*
 old_runs
+old_scripts/*
 
 # Configuration files (except default)
 old_configs/*
