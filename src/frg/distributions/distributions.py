@@ -688,8 +688,10 @@ class EmpiricalDistribution(Distribution):
 
         # Compute the min and max points
         self.lminus = self.sigma**2 * (1.0 - np.sqrt(self.ratio)) ** 2
+        self.lplus_mp = self.sigma**2 * (1.0 + np.sqrt(self.ratio)) ** 2
         self.lplus = max(self.eigenvalues_)
         self.m2 = 1.0 / (self.lplus - self.lminus)
+        self.m2_mp = 1.0 / (self.lplus_mp - self.lminus)
         self.norm = self.kde.integrate_box_1d(self.lminus, self.lplus)
 
         self._fitted = True

@@ -44,24 +44,14 @@ def main(a: argparse.Namespace) -> int | str:
     # Run the simulation
     logger.info("Computing the distribution of the eigenvectors...")
     dist = load_data(cfg)
-    evl = dist.eigenvalues  # compute eigenvalues
+    evl = dist.eigenvalues_  # compute eigenvalues
     evc = dist.eigenvectors_  # compute eigenvectors
-
-    # Find the spikes
-    logger.debug("Computing the position of spikes...")
-    spikes = dist.find_spikes(evl)
-    evl = evl[:spikes]
-    evc = evc[:, :spikes]
-
-    # Compute the momenta
-    k2 = 1 / evl
-    k2 -= k2.min()
 
     # Save the distribution of the eigenvectors
     output_dir = Path(cfg.DATA.OUTPUT_DIR)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / f"mp_evc_distribution_snr={cfg.SIG.SNR}.json"
-    payload = {"k2": k2.tolist(), "evc": evc.tolist()}
+    payload = {"evl": evl.tolist(), "evc": evc.tolist()}
     with open(output_file, "w") as f:
         json.dump(payload, f)
     logger.info("Results saved in %s" % output_file)

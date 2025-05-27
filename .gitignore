@@ -11,6 +11,7 @@ results*/*
 old_runs
 
 # Configuration files (except default)
+old_configs/*
 configs/*
 !configs/config.yaml
 !configs/parameters.json

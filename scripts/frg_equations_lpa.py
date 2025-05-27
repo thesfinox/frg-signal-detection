@@ -80,7 +80,10 @@ def main(a: argparse.Namespace) -> int | str:
         "kappa": kappa.tolist(),
         "u4": u4.tolist(),
         "u6": u6.tolist(),
+        "m2": dist.m2,
     }
+    if hasattr(dist, "m2_mp"):
+        payload["m2_mp"] = dist.m2_mp
     with open(output_file, "w") as f:
         json.dump(payload, f)
     logger.info("Data saved in %s" % output_file)

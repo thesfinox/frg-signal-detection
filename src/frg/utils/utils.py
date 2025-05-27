@@ -48,10 +48,6 @@ def get_cfg_defaults() -> CN:
     cfg.DATA = CN()
     cfg.DATA.OUTPUT_DIR = "results"
 
-    # Plots parameters
-    cfg.PLOTS = CN()
-    cfg.PLOTS.OUTPUT_DIR = "plots"
-
     return cfg.clone()
 
 

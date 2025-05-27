@@ -49,7 +49,8 @@ def main(a: argparse.Namespace) -> int | str:
 
     # Distribution parameters
     x_max = cfg.POT.UV_SCALE
-    x_min = 1.0 / np.sqrt(cfg.DIST.NUM_SAMPLES)  # the smallest bin
+    n_vars = int(cfg.DIST.NUM_SAMPLES * cfg.DIST.RATIO)
+    x_min = 1.0 / np.sqrt(n_vars)  # the smallest bin
 
     # Define the distribution
     if a.analytic:
@@ -59,7 +60,7 @@ def main(a: argparse.Namespace) -> int | str:
         dist = load_data(cfg)
 
     # Compute the canonical dimensions
-    x = np.linspace(x_min, x_max, num=1000)
+    x = np.linspace(x_min, x_max, num=5000)
     dimu2, dimu4, dimu6, _ = dist.canonical_dimensions(x).T
 
     # Save data
@@ -77,7 +78,10 @@ def main(a: argparse.Namespace) -> int | str:
         "dimu4": dimu4.tolist(),
         "dimu6": dimu6.tolist(),
         "dist": dist.ipdf(x).tolist(),
+        "m2": dist.m2,
     }
+    if hasattr(dist, "m2_mp"):
+        payload["m2_mp"] = dist.m2_mp
     with open(output_file, "w") as f:
         json.dump(payload, f)
     logger.info("Results saved in %s" % output_file)

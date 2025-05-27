@@ -5,14 +5,12 @@ DIST:
   RATIO: 0.5
   SEED: 42
   SIGMA: 1.0
-PLOTS:
-  OUTPUT_DIR: plots
 POT:
-  UV_SCALE: 1.0e-01
-  KAPPA_INIT: 1.0e-09
+  KAPPA_INIT: 1.0e-05
   U2_INIT: 1.0e-05
   U4_INIT: 1.0e-05
-  U6_INIT: 0.0
+  U6_INIT: 1.0e-05
+  UV_SCALE: 1.0e-05
 SIG:
-  INPUT: "/path/to/image-or-covariance-matrix"
+  INPUT: null
   SNR: 0.0

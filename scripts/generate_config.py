@@ -79,7 +79,7 @@ def main(a: argparse.Namespace) -> int | str:
         for i, name in enumerate(names):
             v = value if len(names) <= 1 else value[i]
             cfg_copy[name[0]][name[1]] = float(v)
-            output_name += f"{name[0]}.{name[1]}={v}"
+            output_name += f"{name[1].lower()}={v:.9f}"
             if i < len(names) - 1:
                 output_name += "_"
         cfg_copy.freeze()
