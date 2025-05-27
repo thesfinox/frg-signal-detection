@@ -69,6 +69,10 @@ def main(a: argparse.Namespace) -> int | str:
     suffix = f"snr={cfg.SIG.SNR}"
     if a.suffix.lower() == "var":
         suffix = f"var={cfg.DIST.SIGMA}"
+    if a.suffix.lower() == "ratio":
+        suffix = f"ratio={cfg.DIST.RATIO}_seed={cfg.DIST.SEED}"
+    if a.suffix.lower() == "seed":
+        suffix = f"seed={cfg.DIST.SEED}"
     if a.analytic:
         suffix = "analytic"
     output_file = output_dir / f"mp_canonical_dimensions_{suffix}.json"
@@ -103,7 +107,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--suffix",
         default="snr",
-        choices=["snr", "var"],
+        choices=["snr", "var", "ratio", "seed"],
         help="Type of suffix used in the output files",
     )
     parser.add_argument(
