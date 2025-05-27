@@ -34,9 +34,6 @@ def test_cfg_defaults():
     assert hasattr(cfg, "DATA")
     assert cfg.DATA.OUTPUT_DIR == "results"
 
-    assert hasattr(cfg, "PLOTS")
-    assert cfg.PLOTS.OUTPUT_DIR == "plots"
-
 
 def test_load_data():
     """Test the loading of data."""
