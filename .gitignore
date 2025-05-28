@@ -18,6 +18,8 @@ old_configs/*
 configs/*
 !configs/config.yaml
 !configs/parameters.json
+*.tar
+*.tar*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
