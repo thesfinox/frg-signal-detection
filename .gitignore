@@ -2,6 +2,7 @@
 .vscode/
 *.err
 *.out
+*.sbatch
 
 # Images and results
 plots/*
