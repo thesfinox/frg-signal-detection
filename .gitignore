@@ -3,6 +3,7 @@
 *.err
 *.out
 *.sbatch
+*.swp
 
 # Images and results
 plots/*
