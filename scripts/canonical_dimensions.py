@@ -68,13 +68,13 @@ def main(a: argparse.Namespace) -> int | str:
     output_dir.mkdir(parents=True, exist_ok=True)
     suffix = f"snr={cfg.SIG.SNR}"
     if a.suffix.lower() == "var":
-        suffix = f"var={cfg.DIST.SIGMA}"
+        suffix = f"sigma={cfg.DIST.SIGMA}"
     if a.suffix.lower() == "ratio":
         suffix = f"ratio={cfg.DIST.RATIO}_seed={cfg.DIST.SEED}"
     if a.suffix.lower() == "seed":
         suffix = f"seed={cfg.DIST.SEED}"
     if a.analytic:
-        suffix = "analytic"
+        suffix = f"analytic_sigma={cfg.DIST.SIGMA}_ratio={cfg.DIST.RATIO}_seed={cfg.DIST.SEED}"
     output_file = output_dir / f"mp_canonical_dimensions_{suffix}.json"
     payload = {
         "k2": x.tolist(),
