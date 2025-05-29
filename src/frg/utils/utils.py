@@ -100,6 +100,10 @@ def load_data(cfg: CN) -> EmpiricalDistribution:
     cfg : CN
         The configuration file.
 
+    .. warning:
+
+        The image must be a B/W image (single channel) and present pixels in the range :math:`[0, 255]`.
+
     Returns
     -------
     EmpiricalDistribution
