@@ -122,8 +122,7 @@ def load_data(cfg: CN) -> EmpiricalDistribution:
         img -= img.mean()  # centre the image
         img /= img.std()  # scale the image
         dist = EmpiricalDistribution.from_config(cfg).fit(
-            X=img,
-            snr=cfg.SIG.SNR,
+            X=img, snr=cfg.SIG.SNR, fac=0.3
         )
 
     return dist

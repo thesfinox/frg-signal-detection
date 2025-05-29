@@ -89,6 +89,26 @@ class Distribution:
         # inverse of the largest eigenvalue).
         return self.pdf(1 / (x + self.m2) + self.lminus) / (x + self.m2) ** 2
 
+    def lnipdf(self, x: float | ArrayLike) -> float | ArrayLike:
+        """
+        Compute the natural log-PDF of the inverse of the random variable.
+
+        Parameters
+        ----------
+        x : float | ArrayLike
+            The value(s) at which to evaluate the log-PDF.
+
+        Returns
+        -------
+        float | ArrayLike
+            The value(s) of the PDF at the given value(s).
+        """
+        # If x is not a scalar, then vectorize the function
+        if not np.isscalar(x):
+            return np.vectorize(self.lnipdf, otypes=[np.float64])(x)
+
+        return float(np.log(self.ipdf(x)))
+
     def icdf(self, x: float | ArrayLike) -> float | ArrayLike:
         """
         Compute the CDF of the inverse of the random variable.
@@ -133,6 +153,29 @@ class Distribution:
         if not np.isscalar(x):
             return np.vectorize(self.dipdf, otypes=[np.float64])(x)
         return self._diff(self.ipdf, x, eps)
+
+    def dlnipdf(
+        self, x: float | ArrayLike, eps: float = 1.0e-9
+    ) -> float | ArrayLike:
+        """
+        Compute the derivative of the natural log-PDF of the inverse of the random variable.
+
+        Parameters
+        ----------
+        x : float | ArrayLike
+            The value(s) at which to evaluate the derivative.
+        eps : float
+            The step to compute the incremental ratio, by default :math:`10^{-9}`.
+
+        Returns
+        -------
+        float | ArrayLike
+            The value(s) of the derivative of the inverse PDF at the given value(s).
+        """
+        # If x is not a scalar, then vectorize the function
+        if not np.isscalar(x):
+            return np.vectorize(self.dlnipdf, otypes=[np.float64])(x)
+        return self._diff(self.lnipdf, x, eps)
 
     def _diff(self, func: Callable, x: float, eps: float = 1.0e-9) -> float:
         """
@@ -181,7 +224,8 @@ class Distribution:
         # Ignore the warning of zero value division and compute the dimensions
         with np.errstate(divide="ignore", invalid="ignore"):
             dimu2 = self.icdf(x) / self.ipdf(x) / x
-            dimu4 = dimu2 * (3.0 + x * self.dipdf(x) / self.ipdf(x)) - 2.0
+            # dimu4 = dimu2 * (3.0 + x * self.dipdf(x) / self.ipdf(x)) - 2.0
+            dimu4 = dimu2 * (3.0 + x * self.dlnipdf(x)) - 2.0
             dimu6 = -dimu2 + 2.0 * dimu4
             dimchi = 1.0 - dimu2
 
@@ -630,7 +674,7 @@ class EmpiricalDistribution(Distribution):
         self.eigenvectors_[:, idx]
         return eigenvalues[idx]
 
-    def find_spikes(self, eigenvalues: ArrayLike) -> int:
+    def find_spikes(self, eigenvalues: ArrayLike, pow: float = 0.5) -> int:
         """
         Find the spikes in the eigenvalues.
 
@@ -638,13 +682,15 @@ class EmpiricalDistribution(Distribution):
         ----------
         eigenvalues : ArrayLike
             The eigenvalues of the distribution.
+        pow : float
+            Continuity criterion of the eigenvalues. By default `0.5`.
 
         Returns
         -------
         int
             The index of the first spike.
         """
-        dx = 1 / np.sqrt(len(eigenvalues))
+        dx = len(eigenvalues) ** (-pow)
 
         # Find the index of the beginning of the bulk distribution
         #
@@ -654,8 +700,30 @@ class EmpiricalDistribution(Distribution):
 
         return len(eigenvalues) - int(idx)
 
+    def _find_pow(self, pow: float, snr: float) -> float:
+        """
+        Interpolate a power factor to ensure to eliminate all spikes.
+
+        Parameters
+        ----------
+        pow : float
+            The power factor.
+        snr : float
+            The actual signal-to-noise ratio.
+
+        Returns
+        -------
+        float
+            The spike-finding factor.
+        """
+        coeff = (pow - 0.5) / 5
+        return coeff * snr + 0.5
+
     def fit(
-        self, X: ArrayLike | None = None, snr: float = 0.0, fac: float = 0.2
+        self,
+        X: ArrayLike | None = None,
+        snr: float = 0.0,
+        fac: float = 0.3,
     ) -> Self:
         """
         Add the signal (if provided) and compute the eigenvalue distribution.
@@ -667,6 +735,7 @@ class EmpiricalDistribution(Distribution):
         snr : float
             The signal-to-noise ratio.
         fac : float
+            Bandwidth factor. By deault `0.3`.
 
         Returns
         -------
@@ -678,7 +747,9 @@ class EmpiricalDistribution(Distribution):
 
         # Remove the spikes from the eigenvalues and fit a KDE
         eigenvalues = self.eigenvalues
-        spikes = self.find_spikes(eigenvalues)
+        spikes = self.find_spikes(
+            eigenvalues, pow=self._find_pow(pow=self.ratio, snr=snr)
+        )
         self.eigenvalues_ = eigenvalues[:spikes]
         self.eigenvectors_ = self.eigenvectors_[:, :spikes]
         self.kde = gaussian_kde(
