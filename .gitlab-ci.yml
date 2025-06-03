@@ -15,8 +15,8 @@ stages:
 image: python:3.12
 
 before_script:
-  - apt-get update
-  - apt-get install -y git
+  - apt-get update && apt-get install -y git
+  - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.deeplab.intra.cea.fr".insteadOf "https://gitlab.deeplab.intra.cea.fr"
   - python -m venv venv
   - source venv/bin/activate
   - python -m ensurepip --upgrade
