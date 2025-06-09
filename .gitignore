@@ -10,8 +10,7 @@ plots/*
 results/*
 plots*/*
 results*/*
-old_runs
-old_scripts/*
+old_*
 notebooks/results/*
 
 # Configuration files (except default)
