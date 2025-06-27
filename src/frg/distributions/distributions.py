@@ -1,5 +1,10 @@
 """
 Distributions used in experiments and simulations.
+
+Author: Riccardo Finotello <riccardo.finotello@cea.fr>
+Maintainers (name.surname@cea.fr) :
+
+- Riccardo Finotello
 """
 
 from collections.abc import Callable

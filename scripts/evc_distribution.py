@@ -1,8 +1,10 @@
 #! /usr/bin/env python3
 """
-Plot eigenvectors
+Analysis of the eigenvector components.
 
-Plot the distribution of the eigenvectors at different levels of signal-to-noise ratio.
+Study the distribution of the eigenvectors at different levels of signal-to-noise ratio.
+
+Author: Riccardo Finotello <riccardo.finotello@cea.fr>
 """
 
 import argparse
@@ -14,7 +16,7 @@ from frg.utils.utils import get_cfg_defaults, get_logger, load_data
 
 __author__ = "Riccardo Finotello"
 __email__ = "riccardo.finotello@cea.fr"
-__description__ = "Plot the distribution of the eigenvectors at different levels of signal-to-noise ratio."
+__description__ = "Study the distribution of the eigenvectors at different levels of signal-to-noise ratio."
 __epilog__ = "For bug reports and info: " + __author__ + " <" + __email__ + ">"
 
 
@@ -51,7 +53,14 @@ def main(a: argparse.Namespace) -> int | str:
     output_dir = Path(cfg.DATA.OUTPUT_DIR)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / f"mp_evc_distribution_snr={cfg.SIG.SNR}.json"
-    payload = {"evl": evl.tolist(), "evc": evc.tolist()}
+    payload = {
+        "evl": evl.tolist(),
+        "evc": evc.tolist(),
+        "lplus": dist.lplus,
+        "lplus_mp": dist.lplus_mp,
+    }
+    if hasattr(dist, "m2_mp"):
+        payload["m2_mp"] = dist.m2_mp
     with open(output_file, "w") as f:
         json.dump(payload, f)
     logger.info("Results saved in %s" % output_file)

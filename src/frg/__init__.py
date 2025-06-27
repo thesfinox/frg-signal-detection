@@ -9,6 +9,27 @@ from frg.distributions.distributions import (
     EmpiricalDistribution,
     MarchenkoPastur,
 )
+from frg.utils.analysis import (
+    add_values,
+    canonical_dimensions_argsort,
+    canonical_dimensions_files,
+    canonical_dimensions_ratio_files,
+    compute_roi,
+    direct_relative_adherence,
+    extract_interp_values,
+    interp_canonical_dimensions,
+    plot_canonical_dimensions,
+    plot_canonical_dimensions_scan,
+    plot_distribution,
+    plot_eigenvalues,
+    plot_localization,
+    plot_localization_scan,
+    plot_potential,
+    plot_ratio_scan,
+    plot_symmetry_size,
+    plot_symmetry_surface,
+    plot_trajectories,
+)
 from frg.utils.utils import get_cfg_defaults, get_logger
 
 # Set the version number
@@ -20,17 +41,36 @@ __email__ = "riccardo.finotello@cea.fr"
 
 # Set the license description
 __license__ = "CEA Proprietary License"
-__url__ = ""
+__url__ = "https://github.com/thesfinox/frg-signal-detection"
 
 # Package imports
 __all__ = [
     "EmpiricalDistribution",
     "MarchenkoPastur",
-    "get_cfg_defaults",
-    "get_logger",
-    "__version__",
     "__author__",
     "__email__",
     "__license__",
     "__url__",
+    "__version__",
+    "add_values",
+    "canonical_dimensions_argsort",
+    "canonical_dimensions_files",
+    "canonical_dimensions_ratio_files",
+    "compute_roi",
+    "direct_relative_adherence",
+    "extract_interp_values",
+    "get_cfg_defaults",
+    "get_logger",
+    "interp_canonical_dimensions",
+    "plot_canonical_dimensions",
+    "plot_canonical_dimensions_scan",
+    "plot_distribution",
+    "plot_eigenvalues",
+    "plot_localization",
+    "plot_localization_scan",
+    "plot_potential",
+    "plot_ratio_scan",
+    "plot_symmetry_size",
+    "plot_symmetry_surface",
+    "plot_trajectories",
 ]

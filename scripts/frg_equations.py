@@ -1,8 +1,10 @@
 #! /usr/bin/env python3
 """
-Functional Renormalization Group for Signal Detection
+Functional Renormalization Group equations (LPA)
 
 Compute the running of the couplings in a theory with given momenta distribution. Use a simple potential expansion.
+
+Author: Riccardo Finotello <riccardo.finotello@cea.fr>
 """
 
 import argparse

@@ -1,5 +1,10 @@
 """
 Utility functions and helpers to handle configuration files and logging.
+
+Author: Riccardo Finotello <riccardo.finotello@cea.fr>
+Maintainers (name.surname@cea.fr) :
+
+- Riccardo Finotello
 """
 
 import logging

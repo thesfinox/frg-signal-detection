@@ -1,8 +1,10 @@
 #! /usr/bin/env python3
 """
-Functional Renormalization Group for Signal Detection
+Compute the canonical dimensions
 
 Compute the canonical dimensions of the couplings in a theory with given momenta distribution.
+
+Author: Riccardo Finotello <riccardo.finotello@cea.fr>
 """
 
 import argparse

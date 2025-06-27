@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 authors = [
+    { name = "Riccardo Finotello", email = "riccardo.finotello@cea.fr" },
     { name = "Vincent Lahoche", email = "vincent.lahoche@cea.fr" },
     { name = "Dine Ousmane Samary", email = "dine.ousmanesamary@cea.fr" },
-    { name = "Riccardo Finotello", email = "riccardo.finotello@cea.fr" },
 ]
 name = "frg-signal-detection"
 description = "An agnostic definition of detection limit using renormalization group techniques"
@@ -23,7 +23,7 @@ keywords = [
     "field theory",
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -37,10 +37,10 @@ test = ["pytest>=7.4.0", "pytest-cov>=4.1.0"]
 docs = ["sphinx>=6.2.1", "sphinx-rtd-theme>=1.2.0"]
 
 [project.urls]
-Homepage = "https://gitlab.in2p3.fr/data-analysis/mv-detection-limit"
+Homepage = "https://github.com/thesfinox/frg-signal-detection"
 Documentation = "https://detection-limit-signal-detection-db0eefa500d1c4c011fb006e8740d8.pages.in2p3.fr/"
-Repository = "https://gitlab.in2p3.fr/data-analysis/mv-detection-limit"
-Issues = "https://gitlab.in2p3.fr/data-analysis/mv-detection-limit/-/issues"
+Repository = "https://github.com/thesfinox/frg-signal-detection"
+Issues = "https://github.com/thesfinox/frg-signal-detection/issues"
 
 [tool.setuptools.dynamic]
 version = { attr = "frg.__version__" }
@@ -82,7 +82,7 @@ exclude = [
 
 line-length = 80
 indent-width = 4
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F"]

@@ -3,6 +3,8 @@
 Generate configuration files
 
 Generate configurations files for the exploration of the phase space of the initial values of the couplings.
+
+Author: Riccardo Finotello <riccardo.finotello@cea.fr>
 """
 
 import argparse

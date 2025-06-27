@@ -1,22 +1,27 @@
-# Multi-noise Components and Finite Size Effects in Nearly Continuous Spectra
+# Functional Renormalization for Signal Detection
+
+## Dimensional analysis and dimensional phase transition for nearly continuous spectra effective field theory
 
 - **Riccardo Finotello** - Université Paris Saclay, CEA, *Service de Génie Logiciel et de Simulation* (SGLS), Gif-sur-Yvette, F-91191, France
-- **Vincent Lahoche** - Université Paris Saclay, CEA, LIST, Palaiseau, F-91120, France
-- **Dine Ousmane Samary** - Université Paris Saclay, CEA, LIST, Palaiseau, F-91120, France
+- **Vincent Lahoche** - Université Paris Saclay, CEA, Palaiseau, F-91120, France
+- **Dine Ousmane Samary** - Faculté des Sciences et Techniques (ICMPA-UNESCO Chair), Université d’Abomey-Calavi, 072 BP 50, Benin
 
 ## Abstract
 
-![graphical_abstract](./docs/source/_static/snr_localization.png)
+![graphical_abstract](./docs/source/_static/abstract.png)
 
-Signal detection is one of the main challenges of data science, as noise corruption may corrupt measurements and hinder the discovery of significant pieces of data.
-A wide range of techniques aimed at extracting the relevant degrees of freedom from data has been developed over the years.
-However, some issues remain difficult.
-It is notably the case of signal detection in almost continuous spectra, when the signal-to-noise ratio is small enough.
-Following recent advancements, we propose to tackle this issue by analysing the properties of the underlying field theory arising as a kind of maximal entropy distribution close to the boundary of the spectrum.
-Nearly continuous spectra provide an intrinsic scaling law for field and couplings, depending on the energy scale.
-The enable constructing a non-conventional renormalization group which progressively integrates degrees of freedom of the spectrum.
-In this paper we provide an analysis of the properties of this renormalization group in the Gaussian regime and beyond.
-We also propose a method for estimating the number of noise components and define a limit of detection in a general nearly continuous spectrum using the renormalization group.
+Signal detection is one of the main challenges of data science.
+According to the nature of the data, the presence of noise may corrupt measurements and hinder the discovery of significant patterns.
+A wide range of techniques aiming at extracting the relevant degrees of freedom from data has been thus developed over the years.
+However, signal detection in almost continuous spectra, when the signal-to-noise ratio is small, remains a known difficult issue.
+This paper develops over recent advancements proposing to tackle this issue by analysing the properties of the underlying effective field theory arising as a kind of maximal entropy distribution in the vicinity of universal random matrix distributions.
+Nearly continuous spectra provide an intrinsic and non-conventional scaling law for field and couplings, the scaling dimensions depending on the energy scale.
+The related coarse-graining over small eigenvalues of the empirical spectrum defines a specific renormalization group, whose characteristics change when the collective behaviour of “informational” modes become significant, that is, stronger than the intrinsic fluctuations of noise.
+This paper pursues three different goals.
+First, we propose to quantify the real effects of fluctuations relative to what can be called “signal”, while improving the robustness of the results obtained in our previous work.
+Second, we show that quantitative changes in the presence of a signal result in a counterintuitive modification of the distribution of eigenvectors.
+Finally, we propose a method for estimating the number of noise components and define a limit of detection in a general nearly continuous spectrum using the renormalization group.
+The main statements of this paper are essentially numeric, and their reproducibility can be checked using the associated code.
 
 ## Requirements
 
@@ -72,6 +77,7 @@ POT:
   U2_INIT: 1.0e-05
   U4_INIT: 1.0e-05
   U6_INIT: 0.0
+  UV_SCALE: 0.7
 SIG:
   INPUT: "/path/to/image-or-covariance-matrix"
   SNR: 0.0
@@ -90,6 +96,7 @@ Allowed entries are:
 - `POT.U2_INIT`: initial value for the mass (quadratic) coupling,
 - `POT.U4_INIT`: initial value for the quartic coupling,
 - `POT.U6_INIT`: initial value for the sextic coupling,
+- `POT.UV_SCALE`: UV high energy scale,
 - `SIG.INPUT`: path to the input signal or covariance matrix,
 - `SIG.SNR`: signal-to-noise ratio (the signal will be scaled by this factor).
 
@@ -160,7 +167,7 @@ The file `frg_equations.py` can be used to compute the functional renormalizatio
 
 ### Computation of the Functional Renormalization Group Equations in Local Potential Approximation
 
-The file `frg_equations_lpa.py` can be used to compute the functional renormalization group equations in the Local Potential Approximation (LPA):
+The file `frg_equations_lpa.py` can be used to compute the functional renormalization group equations in the Local Potential Approximation (LPA) with an expansion around a non trivial vacuum:
 
 ```bash
 ./scripts/frg_equations_lpa.py \
@@ -170,50 +177,11 @@ The file `frg_equations_lpa.py` can be used to compute the functional renormaliz
 > **NOTE**
 > The `--analytic` argument can be used to run an analytic simulation instead of a numerical one.
 
-### Plotting the Canonical Dimensions
+### Analysis of the Eigenvector Components
 
-The file `plot_canonical_dimensions.py` can be used to plot the canonical dimensions of the distribution of singular values:
-
-```bash
-./scripts/plot_canonical_dimensions.py \
-    /path/to/data.json
-    --output /path/to/output.png
-```
-
-In this case, the JSON file has been produced by the `canonical_dimensions.py` script.
-
-The file `plot_canonical_dimensions_snr.py` can be used to plot the canonical dimensions of the distribution of singular values as a function of the signal-to-noise ratio.
-In this case, multiple JSON files need to be provided:
+The script `evc_distribution.py` computes the distribution of the eigenvectors of the correlations:
 
 ```bash
-./scripts/plot_canonical_dimensions_snr.py \
-    /path/to/data1.json \
-    /path/to/data2.json \
-    /path/to/data3.json \
-    ... \
-    --scale <momentum_scale> \
-    --output /path/to/output.png
+./scripts/evc_distribution.py \
+    --config /path/to/config.yaml
 ```
-
-The momentum scale represents the value of the momentum at which the canonical dimension is computed.
-
-### Plotting the Functional Renormalization Group Equations
-
-Different scripts (starting with `plot_frg_equations_*`) have been prepared for different types of plots:
-
-1. **trajectories**: the `*_traj.py` scripts provide a plot of the trajectories of the parameters from UV to IR,
-2. **phase space**: the `*_space.py` scripts provide a plot of the phase space of the FRG flow (i.e. points which ended in a symmetric or broken phase in the IR),
-3. **signal-to-noise ratio**: the `*_snr.py` scripts provide a plot of _size_ of the symmetric and broken phase regions as a function of the signal-to-noise ratio.
-
-In all cases, scripts must be called as follows:
-
-```bash
-./scripts/plot_frg_equations.py \
-    /path/to/data1.json \
-    /path/to/data2.json \
-    /path/to/data3.json \
-    ... \
-    --output /path/to/output.png
-```
-
-where each JSON file contains the results of a numerical simulation for different initial conditions (i.e. each file has been produced by the `frg_equations.py` or `frg_equations_lpa.py` script).

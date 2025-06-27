@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src")))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "Multi-noise Components and Finite Size Effects in Nearly Continuous Spectra"
+project = "Functional Renormalization for Signal Detection"
 copyright = (
     "2025, Commissariat à l'énergie atomique et aux énergies alternatives"
 )
