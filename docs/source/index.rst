@@ -7,11 +7,6 @@ Functional Renormalization for Signal Detection
 
 **Code**: https://github.com/thesfinox/frg-signal-detection
 
-.. image:: _static/abstract.png
-   :width: 100%
-   :align: center
-   :alt: graphical abstract
-
  .. toctree::
    :maxdepth: 3
    :caption: Description
