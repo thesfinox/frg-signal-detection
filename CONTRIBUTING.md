@@ -1,13 +1,13 @@
-# Contributing to HyperPCA
+# Contributing Guide
 
-> **Everyone** is welcome and encouraged to contribute to **HyperPCA**!
+> **Everyone** is welcome and encouraged to contribute!
 
 We are happy to receive pull requests and issues on the **GitLab** repository.
 Make sure to respect the work of others and the phylosophy of this piece of software:
 
 1. keep it **simple and clear**,
 2. keep it **consistent** (i.e. use the same style),
-3. keep it **compatible** (i.e. be `scikit-learn`-compatible),
+3. keep it **compatible**,
 4. use a **pre-commit** pipeline to check and format your code.
 
 > 💡 PRE-COMMIT
