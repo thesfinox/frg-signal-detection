@@ -6,6 +6,11 @@
 - **Vincent Lahoche** - Université Paris Saclay, CEA, Palaiseau, F-91120, France
 - **Dine Ousmane Samary** - Faculté des Sciences et Techniques (ICMPA-UNESCO Chair), Université d’Abomey-Calavi, 072 BP 50, Benin
 
+
+[![arXiv](https://img.shields.io/badge/arxiv-2506.XXXXX-red)](https://arxiv.org/abs/2507.01064)
+[![github](https://img.shields.io/badge/github-frg--signal--detection-blue?logo=github)](https://github.com/thesfinox/frg-signal-detection)
+[![Documentation Status](https://readthedocs.org/projects/frg-signal-detection/badge/?version=latest)](https://frg-signal-detection.readthedocs.io/en/latest/)
+
 ## Abstract
 
 ![graphical_abstract](./docs/source/_static/abstract.png)
