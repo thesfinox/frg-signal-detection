@@ -22,11 +22,50 @@ The main statements of this paper are essentially numeric, and their reproducibi
 Installation
 ============
 
-You can easily replicate the working environment under ``python">=3.12"`` (e.g. ``conda create -n frg python"<3.13"``) using:
+The framework has been developed under _Python_ 3.12.7.
+It is recommended to create an environment using your preferred package manager.
+For instance, using ``conda``:
 
-.. code:: python
+.. code:: bash
 
-   pip install -f requirements.txt
+   conda create -n frg python=3.12
+   conda activate frg
+
+Production Version
+------------------
+
+You can directly install the package using
+
+.. code:: bash
+
+   pip install git+https://github.com/thesfinox/frg-signal-detection.git
+
+or you can clone the repository
+
+.. code:: bash
+
+   git clone https://github.com/thesfinox/frg-signal-detection.git
+
+and install the package
+
+.. code:: bash
+
+   pip install .
+
+Development Version
+-------------------
+
+You can install the required packages using the following command:
+
+.. code:: bash
+
+   pip install -r requirements.txt
+
+You can then install the package in editable mode using:
+
+.. code:: bash
+
+   pip install -e .
 
 Usage
 =====
@@ -42,10 +81,7 @@ The package relies on the definition of configuration files based on the `yacs <
       RATIO: 0.5
       SEED: 42
       SIGMA: 1.0
-   PLOTS:
-      OUTPUT_DIR: plots
    POT:
-      UV_SCALE: 1.0e-05
       KAPPA_INIT: 1.0e-09
       U2_INIT: 1.0e-05
       U4_INIT: 1.0e-05
@@ -63,8 +99,6 @@ Allowed entries are:
 - ``DIST.RATIO``: ratio between the number of variables (degrees of freedom, or columns of the data matrix) and the sample size (rows of the data matrix),
 - ``DIST.SEED``: random seed to use,
 - ``DIST.SIGMA``: standard deviation of the distribution,
-- ``PLOTS.OUTPUT_DIR``: directory where the plots will be stored,
-- ``POT.UV_SCALE``: high energy scale at which to start the computations,
 - ``POT.KAPPA_INIT``: initial value for the location of the zero of the potential,
 - ``POT.U2_INIT``: initial value for the mass (quadratic) coupling,
 - ``POT.U4_INIT``: initial value for the quartic coupling,
@@ -123,8 +157,8 @@ The file ``canonical_dimensions.py`` can be used to compute the canonical dimens
 
    The ``--analytic`` argument can be used to run an analytic simulation instead of a numerical one.
 
-Computation of the Functional Renormalization Group Equations
--------------------------------------------------------------
+Computation of the FRG Equations
+--------------------------------
 
 The file ``frg_equations.py`` can be used to compute the functional renormalization group equations:
 
@@ -137,8 +171,8 @@ The file ``frg_equations.py`` can be used to compute the functional renormalizat
 
    The ``--analytic`` argument can be used to run an analytic simulation instead of a numerical one.
 
-Computation of the Functional Renormalization Group Equations in Local Potential Approximation
--------------------------------------------------------------------------------------------------------
+Computation of the FRG Equations in Non-trivial Vacuum
+------------------------------------------------------
 
 The file ``frg_equations_lpa.py`` can be used to compute the functional renormalization group equations in the Local Potential Approximation (LPA) with an expansion around a non trivial vacuum:
 

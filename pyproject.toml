@@ -14,7 +14,7 @@ maintainers = [
     { name = "Riccardo Finotello", email = "riccardo.finotello@cea.fr" },
 ]
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 keywords = [
     "signal detection",
     "renormalization group",
@@ -34,7 +34,8 @@ dynamic = ["version", "dependencies"]
 
 [project.optional-dependencies]
 test = ["pytest>=7.4.0", "pytest-cov>=4.1.0"]
-docs = ["sphinx>=6.2.1", "sphinx-rtd-theme>=1.2.0"]
+docs = ["esbonio>=0.16.5", "sphinx>=6.2.1", "sphinx-rtd-theme>=1.2.0"]
+dev = ["pre-commit>=4.2.0"]
 
 [project.urls]
 Homepage = "https://github.com/thesfinox/frg-signal-detection"

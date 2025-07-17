@@ -6,7 +6,6 @@
 - **Vincent Lahoche** - Université Paris Saclay, CEA, Palaiseau, F-91120, France
 - **Dine Ousmane Samary** - Faculté des Sciences et Techniques (ICMPA-UNESCO Chair), Université d’Abomey-Calavi, 072 BP 50, Benin
 
-
 [![arXiv](https://img.shields.io/badge/arxiv-2507.01064-red)](https://arxiv.org/abs/2507.01064)
 [![github](https://img.shields.io/badge/github-frg--signal--detection-blue?logo=github)](https://github.com/thesfinox/frg-signal-detection)
 [![Documentation Status](https://readthedocs.org/projects/frg-signal-detection/badge/?version=latest)](https://frg-signal-detection.readthedocs.io/en/latest/)
@@ -30,11 +29,47 @@ The main statements of this paper are essentially numeric, and their reproducibi
 
 ## Requirements
 
-The framework has been developed under _Python_ 3.12.7.
+The framework has been developed under *Python* 3.12.7.
+It is recommended to create an environment using your preferred package manager.
+For instance, using `conda`:
+
+```bash
+conda create -n frg python=3.12
+conda activate frg
+```
+
+### Production Version
+
+You can directly install the package using
+
+```bash
+pip install git+https://github.com/thesfinox/frg-signal-detection.git
+```
+
+or you can clone the repository
+
+```bash
+git clone https://github.com/thesfinox/frg-signal-detection.git
+```
+
+and install the package
+
+```bash
+pip install .
+```
+
+### Development Version
+
 You can install the required packages using the following command:
 
 ```bash
 pip install -r requirements.txt
+```
+
+You can then install the package in editable mode using:
+
+```bash
+pip install -e .
 ```
 
 ## Contributing
@@ -74,10 +109,7 @@ DIST:
   RATIO: 0.5
   SEED: 42
   SIGMA: 1.0
-PLOTS:
-  OUTPUT_DIR: plots
 POT:
-  UV_SCALE: 1.0e-05
   KAPPA_INIT: 1.0e-09
   U2_INIT: 1.0e-05
   U4_INIT: 1.0e-05
@@ -95,8 +127,6 @@ Allowed entries are:
 - `DIST.RATIO`: ratio between the number of variables (degrees of freedom, or columns of the data matrix) and the sample size (rows of the data matrix),
 - `DIST.SEED`: random seed to use,
 - `DIST.SIGMA`: standard deviation of the distribution,
-- `PLOTS.OUTPUT_DIR`: directory where the plots will be stored,
-- `POT.UV_SCALE`: high energy scale at which to start the computations,
 - `POT.KAPPA_INIT`: initial value for the location of the zero of the potential,
 - `POT.U2_INIT`: initial value for the mass (quadratic) coupling,
 - `POT.U4_INIT`: initial value for the quartic coupling,
@@ -125,7 +155,7 @@ Starting from a base configuration file, multiple derived configurations can be 
     --seed <random_seed>
 ```
 
-New points are generated using random sampling of the parameter space, using a _Latin Hypercube Sampling_ (LHS) algorithm.
+New points are generated using random sampling of the parameter space, using a *Latin Hypercube Sampling* (LHS) algorithm.
 
 The JSON file containing the parameters to sample must be formatted using the configuration keys as keys (case-insensitive) of the dictionary.
 Values can then be input as lists containing the minimum value and maximum value.
@@ -158,7 +188,7 @@ The file `canonical_dimensions.py` can be used to compute the canonical dimensio
 > **NOTE**
 > The `--analytic` argument can be used to run an analytic simulation instead of a numerical one.
 
-### Computation of the Functional Renormalization Group Equations
+### Computation of the FRG Equations
 
 The file `frg_equations.py` can be used to compute the functional renormalization group equations:
 
@@ -170,7 +200,7 @@ The file `frg_equations.py` can be used to compute the functional renormalizatio
 > **NOTE**
 > The `--analytic` argument can be used to run an analytic simulation instead of a numerical one.
 
-### Computation of the Functional Renormalization Group Equations in Local Potential Approximation
+### Computation of the FRG Equation in Non-trivial Vacuum
 
 The file `frg_equations_lpa.py` can be used to compute the functional renormalization group equations in the Local Potential Approximation (LPA) with an expansion around a non trivial vacuum:
 
