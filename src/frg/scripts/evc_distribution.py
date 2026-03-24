@@ -1,26 +1,54 @@
 #! /usr/bin/env python3
 """
-Analysis of the eigenvector components.
+Eigenvector Components
+----------------------
 
 Study the distribution of the eigenvectors at different levels of signal-to-noise ratio.
 
-Author: Riccardo Finotello <riccardo.finotello@cea.fr>
+Authors
+-------
+
+- Riccardo Finotello <riccardo.finotello@cea.fr>
+
+Maintainer
+----------
+
+- Riccardo Finotello
 """
+
+from __future__ import annotations
 
 import argparse
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from frg import get_cfg_defaults, get_logger, load_data
+import numpy as np
 
-__author__ = "Riccardo Finotello"
-__email__ = "riccardo.finotello@cea.fr"
-__description__ = "Study the distribution of the eigenvectors at different levels of signal-to-noise ratio."
-__epilog__ = "For bug reports and info: " + __author__ + " <" + __email__ + ">"
+from frg import EmpiricalDistribution, get_cfg_defaults, get_logger, load_data
+
+if TYPE_CHECKING:
+    from logging import Logger
+
+    from jaxtyping import Float
+    from yacs.config import CfgNode
+
+    # Dummy variables for jaxtyping to prevent Ruff F821 errors.
+    # Defined strictly within TYPE_CHECKING so they cannot exist at runtime,
+    # ensuring they never overwrite or conflict with actual code variables.
+    p: int = 500
+
+
+__author__: str = "Riccardo Finotello"
+__email__: str = "riccardo.finotello@cea.fr"
+__description__: str = "Study the distribution of the eigenvectors at different levels of signal-to-noise ratio."
+__epilog__: str = (
+    "For bug reports and info: " + __author__ + " <" + __email__ + ">"
+)
 
 
 def main(argv: list[str] | None = None) -> int | str:
-    parser = argparse.ArgumentParser(
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description=__description__, epilog=__epilog__
     )
     parser.add_argument("--config", required=False, help="Configuration file")
@@ -36,13 +64,13 @@ def main(argv: list[str] | None = None) -> int | str:
     parser.add_argument(
         "-v", dest="verb", action="count", default=0, help="Verbosity level"
     )
-    a = parser.parse_args(argv)
+    a: argparse.Namespace = parser.parse_args(argv)
 
     # Get the logger
-    logger_level = 10 * (4 - a.verb)
-    logger = get_logger(__name__, level=logger_level)
+    logger_level: int = 10 * (4 - a.verb)
+    logger: Logger = get_logger(__name__, level=logger_level)
     logger.info("Starting...")
-    cfg = get_cfg_defaults()
+    cfg: CfgNode = get_cfg_defaults()
 
     # Open the configuration file
     if a.config is None:
@@ -62,22 +90,26 @@ def main(argv: list[str] | None = None) -> int | str:
 
     # Run the simulation
     logger.info("Computing the distribution of the eigenvectors...")
-    dist = load_data(cfg)
-    evl = dist.eigenvalues_  # compute eigenvalues
-    evc = dist.eigenvectors_  # compute eigenvectors
+    dist: EmpiricalDistribution = load_data(cfg)
+    evl: Float[np.ndarray, "p"] = dist.eigenvalues
+    if dist.eigenvectors_ is not None:
+        evc: Float[np.ndarray, "p, p"] = dist.eigenvectors_
 
     # Save the distribution of the eigenvectors
-    output_dir = Path(cfg.DATA.OUTPUT_DIR)
+    output_dir: Path = Path(cfg.DATA.OUTPUT_DIR)
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_file = output_dir / f"mp_evc_distribution_snr={cfg.SIG.SNR}.json"
-    payload = {
+    output_file: Path = (
+        output_dir / f"mp_evc_distribution_snr={cfg.SIG.SNR}.json"
+    )
+    payload: dict[str, list[float] | float] = {
         "evl": evl.tolist(),
         "evc": evc.tolist(),
         "lplus": dist.lplus,
         "lplus_mp": dist.lplus_mp,
     }
-    if hasattr(dist, "m2_mp"):
-        payload["m2_mp"] = dist.m2_mp
+    m2_mp: float | None = getattr(dist, "m2_mp", None)
+    if m2_mp is not None:
+        payload["m2_mp"]: float = m2_mp
     with open(output_file, "w") as f:
         json.dump(payload, f)
     logger.info("Results saved in %s" % output_file)

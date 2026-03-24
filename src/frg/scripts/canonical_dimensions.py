@@ -1,28 +1,55 @@
 #! /usr/bin/env python3
 """
-Compute the canonical dimensions
+Canonical Dimensions
+--------------------
 
 Compute the canonical dimensions of the couplings in a theory with given momenta distribution.
 
-Author: Riccardo Finotello <riccardo.finotello@cea.fr>
+Authors
+-------
+
+- Riccardo Finotello <riccardo.finotello@cea.fr>
+- Parham Radpay <parhamradpay@gmail.com>
+
+Maintainer
+----------
+
+- Riccardo Finotello
 """
+
+from __future__ import annotations
 
 import argparse
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from frg import MarchenkoPastur, get_cfg_defaults, get_logger, load_data
+from frg import (
+    EmpiricalDistribution,
+    MarchenkoPastur,
+    get_cfg_defaults,
+    get_logger,
+    load_data,
+)
 
-__author__ = "Riccardo Finotello"
-__email__ = "riccardo.finotello@cea.fr"
-__description__ = "Compute the canonical dimensions of the couplings in a theory with given momenta distribution."
-__epilog__ = "For bug reports and info: " + __author__ + " <" + __email__ + ">"
+if TYPE_CHECKING:
+    from logging import Logger
+
+    from jaxtyping import Float
+    from yacs.config import CfgNode
+
+__author__: str = "Riccardo Finotello and Parham Radpay"
+__email__: str = "riccardo.finotello@cea.fr; parham.radpay@gmail.com"
+__description__: str = "Compute the canonical dimensions of the couplings in a theory with given momenta distribution."
+__epilog__: str = (
+    "For bug reports and info: " + __author__ + " <" + __email__ + ">"
+)
 
 
 def main(argv: list[str] | None = None) -> int | str:
-    parser = argparse.ArgumentParser(
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description=__description__, epilog=__epilog__
     )
     parser.add_argument("--config", required=False, help="Configuration file")
@@ -34,9 +61,9 @@ def main(argv: list[str] | None = None) -> int | str:
     )
     parser.add_argument(
         "--suffix",
-        default="snr",
-        choices=["snr", "var", "ratio", "seed"],
-        help="Type of suffix used in the output files",
+        nargs="+",
+        choices=["nsamples", "ratio", "seed", "var", "lam", "mode"],
+        help="Type of suffix used in the output files. Must be a list containing one or more of the following: nsamples, ratio, seed, var, lam, mode",
     )
     parser.add_argument(
         "--args",
@@ -47,13 +74,13 @@ def main(argv: list[str] | None = None) -> int | str:
     parser.add_argument(
         "-v", dest="verb", action="count", default=0, help="Verbosity level"
     )
-    a = parser.parse_args(argv)
+    a: argparse.Namespace = parser.parse_args(argv)
 
     # Get the logger
-    logger_level = 10 * (4 - a.verb)
-    logger = get_logger(__name__, level=logger_level)
+    logger_level: int = 10 * (4 - a.verb)
+    logger: Logger = get_logger(__name__, level=logger_level)
     logger.info("Starting...")
-    cfg = get_cfg_defaults()
+    cfg: CfgNode = get_cfg_defaults()
 
     # Open the configuration file
     if a.config is None:
@@ -75,35 +102,46 @@ def main(argv: list[str] | None = None) -> int | str:
     logger.info("Computing the canonical dimensions...")
 
     # Distribution parameters
-    x_max = cfg.POT.UV_SCALE
-    n_vars = int(cfg.DIST.NUM_SAMPLES * cfg.DIST.RATIO)
-    x_min = 1.0 / np.sqrt(n_vars)  # the smallest bin
+    x_max: float = cfg.POT.UV_SCALE
+    n_vars: int = int(cfg.DIST.NUM_SAMPLES * cfg.DIST.RATIO)
+    x_min: float = 1.0 / np.sqrt(n_vars)  # the smallest bin
 
     # Define the distribution
     if a.analytic:
-        x_min = 0.0  # analytic can go to zero
-        dist = MarchenkoPastur(ratio=cfg.DIST.RATIO, sigma=cfg.DIST.SIGMA)
+        x_min: float = 0.0  # analytic can go to zero
+        dist: MarchenkoPastur = MarchenkoPastur(
+            ratio=cfg.DIST.RATIO, var=cfg.DIST.VAR
+        )
     else:
-        dist = load_data(cfg)
+        dist: EmpiricalDistribution = load_data(cfg)
 
     # Compute the canonical dimensions
-    x = np.linspace(x_min, x_max, num=5000)
+    x: Float[np.ndarray, "5000"] = np.linspace(x_min, x_max, num=5000)
+    dimu2: Float[np.ndarray, "5000"]
+    dimu4: Float[np.ndarray, "5000"]
+    dimu6: Float[np.ndarray, "5000"]
     dimu2, dimu4, dimu6, _ = dist.canonical_dimensions(x).T
 
     # Save data
-    output_dir = Path(cfg.DATA.OUTPUT_DIR)
+    output_dir: Path = Path(cfg.DATA.OUTPUT_DIR)
     output_dir.mkdir(parents=True, exist_ok=True)
-    suffix = f"snr={cfg.SIG.SNR}"
-    if a.suffix.lower() == "var":
-        suffix = f"sigma={cfg.DIST.SIGMA}"
-    if a.suffix.lower() == "ratio":
-        suffix = f"ratio={cfg.DIST.RATIO}_seed={cfg.DIST.SEED}"
-    if a.suffix.lower() == "seed":
-        suffix = f"seed={cfg.DIST.SEED}"
+
+    suffix: str = f"snr={cfg.SIG.SNR}"
+    suffix_keys = set(a.suffix or [])
+    if "nsamples" in suffix_keys:
+        suffix += f"_nsamples={cfg.DIST.NUM_SAMPLES}"
+    if "ratio" in suffix_keys:
+        suffix += f"_ratio={cfg.DIST.RATIO}"
+    if "seed" in suffix_keys:
+        suffix += f"_seed={cfg.DIST.SEED}"
+    if "var" in suffix_keys:
+        suffix += f"_var={cfg.DIST.VAR}"
+    if "lam" in suffix_keys:
+        suffix += f"_lam={cfg.DIST.POIS_LAM}"
     if a.analytic:
-        suffix = f"analytic_sigma={cfg.DIST.SIGMA}_ratio={cfg.DIST.RATIO}_seed={cfg.DIST.SEED}"
-    output_file = output_dir / f"mp_canonical_dimensions_{suffix}.json"
-    payload = {
+        suffix = f"analytic_var={cfg.DIST.VAR}_ratio={cfg.DIST.RATIO}_seed={cfg.DIST.SEED}"
+    output_file: Path = output_dir / f"mp_canonical_dimensions_{suffix}.json"
+    payload: dict[str, list[float] | float] = {
         "k2": x.tolist(),
         "dimu2": dimu2.tolist(),
         "dimu4": dimu4.tolist(),
@@ -111,8 +149,9 @@ def main(argv: list[str] | None = None) -> int | str:
         "dist": dist.ipdf(x).tolist(),
         "m2": dist.m2,
     }
-    if hasattr(dist, "m2_mp"):
-        payload["m2_mp"] = dist.m2_mp
+    m2_mp: float | None = getattr(dist, "m2_mp", None)
+    if m2_mp is not None:
+        payload["m2_mp"]: float = float(m2_mp)
     with open(output_file, "w") as f:
         json.dump(payload, f)
     logger.info("Results saved in %s" % output_file)
@@ -125,4 +164,5 @@ def cli():
 
 
 if __name__ == "__main__":
+    cli()
     cli()
