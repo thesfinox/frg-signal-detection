@@ -29,14 +29,14 @@ class TestMarchenkoPastur:
         # Assert values
         mp = MarchenkoPastur(0.5, 1.0)
         assert mp.ratio == 0.5
-        assert mp.sigma == 1.0
+        assert mp.var == 1.0
         assert mp.lplus == 1.0**2 * (1.0 + np.sqrt(0.5)) ** 2
         assert mp.lminus == 1.0**2 * (1.0 - np.sqrt(0.5)) ** 2
 
     def test_pdf(self):
         """Test the computation of the PDF"""
         mp = MarchenkoPastur(0.5, 1.0)
-        assert mp.pdf(0.0) == 0.0
+        assert mp.pdf(0.0) == 0.0  # Test den != 0 logic
         assert mp.pdf(50.0) == 0.0
         assert isinstance(mp.pdf([0.0, 50.0]), np.ndarray)
         assert (mp.pdf([0.0, 50.0]) == np.array([0.0, 0.0])).all()
@@ -58,7 +58,7 @@ class TestMarchenkoPastur:
         assert all((y[1:] - y[:-1]) >= 0.0)  # test monotonic increasing
 
         # Test with different arguments
-        assert mp.cdf(2.0, x0=0.0) == mp.cdf(2.0)
+        assert mp.cdf(2.0) == mp.cdf(2.0)
 
     def test_dpdf(self):
         """Test the computation of the derivative of the PDF"""
@@ -76,6 +76,9 @@ class TestMarchenkoPastur:
         assert mp.ipdf(50.0) > 0.0
         assert isinstance(mp.ipdf([0.0, 50.0]), np.ndarray)
 
+        assert mp.lnipdf(0.000001) < 0.0
+        assert isinstance(mp.lnipdf([0.000001, 50.0]), np.ndarray)
+
     def test_icdf(self):
         """Test the computation of the inverse CDF (momenta)"""
         mp = MarchenkoPastur(0.5, 1.0)
@@ -92,6 +95,9 @@ class TestMarchenkoPastur:
         x = np.linspace(1.0, 10.0, 100)
         y = mp.dipdf(x)
         assert all((y[1:] - y[:-1]) >= 0.0)  # test monotonic increasing
+
+        assert isinstance(mp.dlnipdf([1.0, 50.0]), np.ndarray)
+        assert mp.dlnipdf(2.0) != 0.0
 
     def test_canonical_dimensions(self):
         """Test the computation of the canonical dimensions"""
@@ -131,6 +137,22 @@ class TestMarchenkoPastur:
         assert isinstance(u2, np.ndarray)
         assert isinstance(u4, np.ndarray)
         assert isinstance(u6, np.ndarray)
+
+        rhs = mp._frg_equations_lpa_single(x, 1e-5, 1e-5, 1e-5, return_rhs=True)
+        assert isinstance(rhs, np.ndarray)
+
+        k2_scipy, kappa_s, u4_s, u6_s = mp.frg_equations_lpa(
+            x, 1e-5, 1e-5, 1e-5, use_naive_euler=False
+        ).T
+        assert isinstance(k2_scipy, np.ndarray)
+
+        rhs = mp._frg_equations_single(x, 1e-5, 1e-5, 1e-5, return_rhs=True)
+        assert isinstance(rhs, np.ndarray)
+
+        k2_scipy, u2_s, u4_s, u6_s = mp.frg_equations(
+            x, 1e-5, 1e-5, 1e-5, use_naive_euler=False
+        ).T
+        assert isinstance(k2_scipy, np.ndarray)
 
     def test_frg_equations_lpa(self):
         """

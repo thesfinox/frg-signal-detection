@@ -16,7 +16,7 @@ def test_cfg_defaults():
 
     assert hasattr(cfg, "DIST")
     assert cfg.DIST.NUM_SAMPLES == 1000
-    assert cfg.DIST.SIGMA == 1.0
+    assert cfg.DIST.VAR == 1.0
     assert cfg.DIST.RATIO == 0.5
     assert cfg.DIST.SEED == 42
 
@@ -47,9 +47,27 @@ def test_load_data():
     dist = load_data(cfg)
     assert isinstance(dist, EmpiricalDistribution)
 
-    # cfg["SIG"]["INPUT"] = "tests/data/mnist.npy"
-    # dist = load_data(cfg)
-    # assert isinstance(dist, EmpiricalDistribution)
+    import numpy as np
+    import os
+
+    np.random.seed(42)
+    X_dummy = np.random.randn(100, 50)
+    np.save("tests/data/dummy.npy", np.cov(X_dummy, rowvar=False))
+    cfg["SIG"]["INPUT"] = "tests/data/dummy.npy"
+    dist = load_data(cfg)
+    assert isinstance(dist, EmpiricalDistribution)
+
+    # Test non-2D covariance
+    np.save("tests/data/dummy.npy", np.ones(10))
+    with pytest.raises(ValueError):
+        load_data(cfg)
+
+    # Test non-square covariance
+    np.save("tests/data/dummy.npy", np.ones((10, 5)))
+    with pytest.raises(ValueError):
+        load_data(cfg)
+
+    os.remove("tests/data/dummy.npy")
 
     cfg["SIG"]["INPUT"] = "spam.npy"
     with pytest.raises(FileNotFoundError):
