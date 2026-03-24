@@ -1,0 +1,20 @@
+DATA:
+  OUTPUT_DIR: results
+DIST:
+  NUM_SAMPLES: 20000
+  RATIO: 0.9
+  SEED: 42
+  VAR: 1.0
+  IS_POIS: true
+  POIS_DATA: true
+  POIS_LAM: 10.0
+  POIS_MODE: centered
+POT:
+  KAPPA_INIT: 1.0e-05
+  U2_INIT: 1.0e-05
+  U4_INIT: 1.0e-05
+  U6_INIT: 1.0e-05
+  UV_SCALE: 0.7
+SIG:
+  INPUT: null
+  SNR: 1.0

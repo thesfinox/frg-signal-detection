@@ -1,15 +1,35 @@
 """
-Initialization script for the frg package.
+Initialisation
+--------------
 
 This script provides a CLI command to initialize a user workspace by copying template configuration files from the package distribution to the current working directory.
 
-Author: Riccardo Finotello <riccardo.finotello@cea.fr>
+Authors
+-------
+
+- Riccardo Finotello <riccardo.finotello@cea.fr>
+
+Maintainers
+-----------
+
+- Riccardo Finotello
 """
+
+from __future__ import annotations
 
 import argparse
 import importlib.resources as pkg_resources
 import shutil
 from pathlib import Path
+
+__author__: str = "Riccardo Finotello"
+__email__: str = "riccardo.finotello@cea.fr"
+__description__: str = (
+    "Initialize the frg workspace by copying template configs and scripts."
+)
+__epilog__: str = (
+    "For bug reports and info: " + __author__ + " <" + __email__ + ">"
+)
 
 
 def copy_resource_dir(resource_pkg: str, target_dir: Path):
@@ -19,7 +39,7 @@ def copy_resource_dir(resource_pkg: str, target_dir: Path):
     try:
         # Use importlib.resources to find the path to the internal data
         with pkg_resources.path(resource_pkg, "__init__.py") as p:
-            source_dir = p.parent
+            source_dir: Path = p.parent
 
         if not source_dir.exists():
             print(f"[ERROR] Source directory {source_dir} not found.")
@@ -33,7 +53,7 @@ def copy_resource_dir(resource_pkg: str, target_dir: Path):
             if item.name == "__init__.py" or item.name == "__pycache__":
                 continue
 
-            dest = target_dir / item.name
+            dest: Path = target_dir / item.name
             if item.is_dir():
                 if dest.exists():
                     shutil.rmtree(dest)
@@ -46,24 +66,24 @@ def copy_resource_dir(resource_pkg: str, target_dir: Path):
 
 
 def main(argv: list[str] | None = None) -> int | str:
-    parser = argparse.ArgumentParser(
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Initialize the frg workspace by copying template configs and scripts."
     )
     parser.add_argument(
         "--force", action="store_true", help="Overwrite existing files."
     )
-    args = parser.parse_args(argv)
+    args: argparse.Namespace = parser.parse_args(argv)
 
-    cwd = Path.cwd()
+    cwd: Path = Path.cwd()
 
-    # 1. Copy configs
-    configs_dir = cwd / "configs"
+    # Copy configs
+    configs_dir: Path = cwd / "configs"
     if configs_dir.exists() and args.force:
         shutil.rmtree(configs_dir)
     copy_resource_dir("frg.configs", configs_dir)
 
-    # 2. Copy env.sh specifically
-    env_file = cwd / "env.sh"
+    # Copy env.sh specifically
+    env_file: Path = cwd / "env.sh"
     if env_file.exists() and not args.force:
         print("[INFO] env.sh already exists. Use --force to overwrite.")
     else:
@@ -75,8 +95,8 @@ def main(argv: list[str] | None = None) -> int | str:
         except Exception as e:
             print(f"[WARN] Could not copy env.sh: {e}")
 
-    # 3. Copy notebooks
-    notebooks_dir = cwd / "notebooks"
+    # Copy notebooks
+    notebooks_dir: Path = cwd / "notebooks"
     if notebooks_dir.exists() and args.force:
         shutil.rmtree(notebooks_dir)
     copy_resource_dir("frg.notebooks", notebooks_dir)
