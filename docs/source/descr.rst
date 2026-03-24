@@ -12,11 +12,11 @@ A wide range of techniques aiming at extracting the relevant degrees of freedom 
 However, signal detection in almost continuous spectra, when the signal-to-noise ratio is small, remains a known difficult issue.
 This paper develops over recent advancements proposing to tackle this issue by analysing the properties of the underlying effective field theory arising as a kind of maximal entropy distribution in the vicinity of universal random matrix distributions.
 Nearly continuous spectra provide an intrinsic and non-conventional scaling law for field and couplings, the scaling dimensions depending on the energy scale.
-The related coarse-graining over small eigenvalues of the empirical spectrum defines a specific renormalization group, whose characteristics change when the collective behaviour of “informational” modes become significant, that is, stronger than the intrinsic fluctuations of noise.
+The related coarse-graining over small eigenvalues of the empirical spectrum defines a specific renormalisation group, whose characteristics change when the collective behaviour of “informational” modes become significant, that is, stronger than the intrinsic fluctuations of noise.
 This paper pursues three different goals.
 First, we propose to quantify the real effects of fluctuations relative to what can be called “signal”, while improving the robustness of the results obtained in our previous work.
 Second, we show that quantitative changes in the presence of a signal result in a counterintuitive modification of the distribution of eigenvectors.
-Finally, we propose a method for estimating the number of noise components and define a limit of detection in a general nearly continuous spectrum using the renormalization group.
+Finally, we propose a method for estimating the number of noise components and define a limit of detection in a general nearly continuous spectrum using the renormalisation group.
 The main statements of this paper are essentially numeric, and their reproducibility can be checked using the associated code.
 
 Installation
@@ -74,15 +74,19 @@ The package relies on the definition of configuration files based on the `yacs <
       NUM_SAMPLES: 1000
       RATIO: 0.5
       SEED: 42
-      SIGMA: 1.0
+      VAR: 1.0
+      IS_POIS: false
+      POIS_DATA: false
+      POIS_LAM: 10.0
+      POIS_MODE: centered
    POT:
-      KAPPA_INIT: 1.0e-09
+      KAPPA_INIT: 1.0e-05
       U2_INIT: 1.0e-05
       U4_INIT: 1.0e-05
-      U6_INIT: 0.0
-      UV_SCALE: 0.7
+      U6_INIT: 1.0e-05
+      UV_SCALE: 1.0e-05
    SIG:
-      INPUT: "/path/to/image-or-covariance-matrix"
+      INPUT: null
       SNR: 0.0
 
 
@@ -92,14 +96,28 @@ Allowed entries are:
 - ``DIST.NUM_SAMPLES``: size of the data sample to use,
 - ``DIST.RATIO``: ratio between the number of variables (degrees of freedom, or columns of the data matrix) and the sample size (rows of the data matrix),
 - ``DIST.SEED``: random seed to use,
-- ``DIST.SIGMA``: standard deviation of the distribution,
+- ``DIST.VAR``: variance of the distribution (previously ``SIGMA``),
+- ``DIST.IS_POIS``: boolean flag to enable Poisson noise injection,
+- ``DIST.POIS_DATA``: if ``True``, Poisson noise is added directly to the data (overwriting the Gaussian component). If ``False``, it is added to the covariance matrix,
+- ``DIST.POIS_LAM``: lambda parameter for the Poisson distribution,
+- ``DIST.POIS_MODE``: centering mode for Poisson noise (``centered``, ``non-centered``, or ``mirrored``),
 - ``POT.KAPPA_INIT``: initial value for the location of the zero of the potential,
 - ``POT.U2_INIT``: initial value for the mass (quadratic) coupling,
 - ``POT.U4_INIT``: initial value for the quartic coupling,
 - ``POT.U6_INIT``: initial value for the sextic coupling,
 - ``POT.UV_SCALE``: UV high energy scale,
 - ``SIG.INPUT``: path to the input signal or covariance matrix,
-- ``SIG.SNR``: signal-to-noise ratio (the signal will be scaled by this factor).
+- ``SIG.SNR``: signal-to-noise ratio (the signal will be scaled by this factor). Setting ``SNR < 0`` discards noise.
+
+Noise Injection Use Cases
+-------------------------
+
+The framework supports four primary noise modelling scenarios controlled via configuration:
+
+1. **Signal + Gaussian Noise**: Set ``DIST.IS_POIS: false`` and ``SIG.SNR >= 0``. Noise is added directly to the data.
+2. **Signal + Poisson Noise**: Set ``DIST.IS_POIS: true``, ``DIST.POIS_DATA: true``, and ``SIG.SNR >= 0``. Poisson noise completely overwrites the Gaussian background.
+3. **Mixed Noise (Gaussian + Poisson)**: Set ``DIST.IS_POIS: true``, ``DIST.POIS_DATA: false``, and ``SIG.SNR >= 0``. Gaussian noise is added to the signal, while Poisson noise is injected into the covariance matrix.
+4. **Pure Signal**: Set ``SIG.SNR < -1.0`` (or any negative value) to discard the noise component entirely.
 
 Generation of Multiple Configuration Files
 ------------------------------------------
