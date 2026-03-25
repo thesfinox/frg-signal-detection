@@ -16,19 +16,6 @@ Maintainers
 - Riccardo Finotello
 """
 
-# TODO commit the changes: the precommit seems to remove the "" from all typing annotations using jaxtyping
-# Commit message:
-# feat(distributions): Poisson noise use case
-
-# - Add Poisson noise to the empirical distribution
-# - Use cases:
-#   (1) add Gaussian noise to data;
-#   (2) add Poisson noise to data;
-#   (3) add Gaussian noise to data and Poisson to covariance;
-#   (4) do not add noise
-# -  Improve typing hints
-# - implement adaptive solver and overloads to functions
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, overload
@@ -1183,17 +1170,26 @@ class EmpiricalDistribution(Distribution):
         Returns
         -------
         int
-            The index of the first spike.
+            The index of the first spike (which equals the number of eigenvalues in the bulk).
         """
         dx: float = len(eigenvalues) ** (-pow)
 
-        # Find the index of the beginning of the bulk distribution
-        #
-        #   >>> Going from right to left until the difference is smaller than dx
+        # Find the first gap from the IR (left) that is larger than dx
         diff: Float[np.ndarray, "n_vars - 1"] = np.diff(eigenvalues)
-        idx: int = int(np.argmin((diff > dx)[::-1]))
+        large_gaps: np.ndarray = np.where(diff > dx)[0]
 
-        return len(eigenvalues) - int(idx)
+        if len(large_gaps) == 0:
+            # All gaps are small, the entire spectrum is considered
+            # the continuous bulk
+            return len(eigenvalues)
+
+        if len(large_gaps) == len(diff) or np.median(diff) > dx:
+            # All gaps are uniformly large (e.g. scaled variance)
+            # Only the most UV eigenvalue is considered a spike
+            return 1
+
+        # The bulk ends right before the first large gap
+        return int(large_gaps[0]) + 1
 
     def _find_pow(self, pow: float, snr: float) -> float:
         """
@@ -1256,6 +1252,12 @@ class EmpiricalDistribution(Distribution):
         self.eigenvectors_: Float[np.ndarray, "n_vars, n_vars - n_spikes"] = (
             self.eigenvectors_[:, :spikes]
         )
+
+        # Avoid KDE crash if there's only 1 eigenvalue left in the bulk
+        if len(self.eigenvalues_) == 1:
+            val: float = float(self.eigenvalues_[0])
+            self.eigenvalues_ = np.array([val - 1.0e-5, val + 1.0e-5])
+
         self.kde = gaussian_kde(
             self.eigenvalues_,
             bw_method=lambda obj: np.power(obj.n, -1.0 / (obj.d + 4.0)) * fac,
