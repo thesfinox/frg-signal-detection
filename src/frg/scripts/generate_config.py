@@ -97,6 +97,11 @@ def main(argv: list[str] | None = None) -> int | str:
         if cfg_file.exists():
             logger.debug("Configuration file exists!")
             cfg.merge_from_file(cfg_file)
+        else:
+            logger.error("Configuration file %s does not exist!", a.config)
+            raise FileNotFoundError(
+                "Configuration file %s does not exist!" % a.config
+            )
     cfg.freeze()
 
     # Output path
@@ -205,5 +210,4 @@ def cli():
 
 
 if __name__ == "__main__":
-    cli()
     cli()

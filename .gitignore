@@ -13,6 +13,7 @@ results*/*
 old_*
 notebooks/results/*
 notebooks/plots/*
+experiments/*
 
 # Configuration files (except default)
 old_configs/*
