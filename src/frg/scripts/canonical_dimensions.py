@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -87,14 +88,14 @@ def main(argv: list[str] | None = None) -> int | str:
         logger.debug("No configuration file specified")
     else:
         logger.debug("Configuration file: %s" % a.config)
-        cfg_file = Path(a.config)
+        cfg_file = Path(os.path.expandvars(a.config)).absolute()
         if cfg_file.exists():
             logger.debug("Configuration file exists!")
             cfg.merge_from_file(cfg_file)
         else:
-            logger.error("Configuration file %s does not exist!", a.config)
+            logger.error("Configuration file %s does not exist!", cfg_file)
             raise FileNotFoundError(
-                "Configuration file %s does not exist!" % a.config
+                "Configuration file %s does not exist!" % cfg_file
             )
     cfg.merge_from_list(a.args)
     cfg.freeze()
@@ -128,7 +129,7 @@ def main(argv: list[str] | None = None) -> int | str:
     dimu2, dimu4, dimu6, _ = dist.canonical_dimensions(x).T
 
     # Save data
-    output_dir: Path = Path(cfg.DATA.OUTPUT_DIR)
+    output_dir: Path = Path(os.path.expandvars(cfg.DATA.OUTPUT_DIR)).absolute()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     suffix: str = f"snr={cfg.SIG.SNR}"

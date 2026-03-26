@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from itertools import combinations
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -93,27 +94,27 @@ def main(argv: list[str] | None = None) -> int | str:
         logger.debug("No configuration file specified")
     else:
         logger.debug("Configuration file: %s" % a.config)
-        cfg_file = Path(a.config)
+        cfg_file = Path(os.path.expandvars(a.config)).absolute()
         if cfg_file.exists():
             logger.debug("Configuration file exists!")
             cfg.merge_from_file(cfg_file)
         else:
-            logger.error("Configuration file %s does not exist!", a.config)
+            logger.error("Configuration file %s does not exist!", cfg_file)
             raise FileNotFoundError(
-                "Configuration file %s does not exist!" % a.config
+                "Configuration file %s does not exist!" % cfg_file
             )
     cfg.freeze()
 
     # Output path
-    output_dir: Path = Path(a.output_dir)
+    output_dir: Path = Path(os.path.expandvars(a.output_dir)).absolute()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Parameters to be samples
-    params: Path = Path(a.params)
+    # Parameters to be sampled
+    params: Path = Path(os.path.expandvars(a.params)).absolute()
     if not params.exists():
-        logger.error("Parameters file %s does not exist!", a.params)
-        raise FileNotFoundError("Parameters file %s does not exist!" % a.params)
-    logger.debug("Opening parameters file %s", a.params)
+        logger.error("Parameters file %s does not exist!", params)
+        raise FileNotFoundError("Parameters file %s does not exist!" % params)
+    logger.debug("Opening parameters file %s", params)
     with open(str(params)) as f:
         params: dict[str, dict[str, list[float]]] = json.load(f)
 
