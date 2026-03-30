@@ -273,6 +273,72 @@ def canonical_dimensions_files(
     return canonical_dimensions_argsort(x, dimu2, dimu4, dimu6)
 
 
+def canonical_dimensions_files_poiss(
+    path: str | Path, glob: str = "*.json"
+) -> tuple[
+    Float[np.ndarray, "n"],
+    Float[np.ndarray, "n"],
+    Float[np.ndarray, "n"],
+    Float[np.ndarray, "n"],
+    Float[np.ndarray, "n"],
+]:
+    """
+    Open multiple files and stores the canonical dimensions in case of Poisson noise.
+
+    Parameters
+    ----------
+    path : str | Path
+        The path to the directory containing the files.
+    glob : str
+        The global pattern to open. By default `"*.json"`.
+
+    Returns
+    -------
+    tuple[np.ndarray,np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        A tuple containing the Gaussian signal-to-noise ratio, the Poisson parameter, and the canonical dimensions.
+    """
+    snr: list[float] = []
+    lam: list[float] = []
+    dimu2: list[float] = []
+    dimu4: list[float] = []
+    dimu6: list[float] = []
+    scale: list[float] = []
+
+    files: Generator[Path, None, None] = Path(path).glob(glob)
+
+    for file in files:
+        with open(file) as f:
+            data: dict[str, Any] = json.load(f)
+        add_values(
+            extract_interp_values(data),
+            scale,
+            dimu2,
+            dimu4,
+            dimu6,
+        )
+
+        snr_value: re.Match[str] | None = re.search(
+            "snr=[0-9]*[.][0-9]*", file.stem
+        )
+        if snr_value:
+            snr_float: float = float(snr_value.group()[4:])
+            snr.append(snr_float)
+        lam_value: re.Match[str] | None = re.search(
+            "lam=[0-9]*[.][0-9]*", file.stem
+        )
+        if lam_value:
+            lam_float: float = float(lam_value.group()[4:])
+            lam.append(lam_float)
+
+    return (
+        np.array(snr),
+        np.array(lam),
+        np.array(dimu2),
+        np.array(dimu4),
+        np.array(dimu6),
+    )
+
+
 def canonical_dimensions_ratio_files(
     path: str | Path, glob: str = "*.json", analytic: bool = False
 ) -> pd.DataFrame:
@@ -764,6 +830,153 @@ def plot_canonical_dimensions_scan(
         plt.savefig(out_dir / "canonical_dimensions_snr.pdf")
     else:
         plt.savefig(out_dir / f"canonical_dimensions_{suffix}.pdf")
+
+
+def plot_canonical_dimensions_scan2d(
+    snr: Float[np.ndarray, "n"],
+    lam: Float[np.ndarray, "n"],
+    dimu2: Float[np.ndarray, "n"],
+    dimu4: Float[np.ndarray, "n"],
+    dimu6: Float[np.ndarray, "n"],
+    suffix: str | None = None,
+    image: str | None = None,
+    output_dir: str | Path = "plots",
+):
+    """
+    Plot the canonical dimensions as a surface plot of the signal-to-noise ratio and the Poisson parameter.
+
+    Parameters
+    ----------
+    snr : array of floats
+        The signal-to-noise ratio (shape: :math:`n`).
+    lam : array of floats
+        The Poisson parameter (shape: :math:`n`).
+    win : int
+        The smoothing window width. By default `0`.
+    dimu2 : array of floats, optional
+        The list of values of the canonical dimension of the quadratic coupling (shape: :math:`n`).
+    dimu4 : array of floats, optional
+        The list of values of the canonical dimension of the quartic coupling (shape: :math:`n`).
+    dimu6 : array of floats, optional
+        The list of values of the canonical dimension of the sextic coupling (shape: :math:`n`).
+    suffix : str, optional
+        The suffix to postpone to the file name.
+    image : str | Path, optional
+        The path to the image used for the computations.
+    output_dir : str | Path
+        The output directory. By default `"plots"`.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the provided image could not be found.
+    """
+    out_dir: Path = Path(output_dir)
+    if not out_dir.exists():
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+    if image is not None:
+        image_path: Path = Path(image)
+        if not image_path.exists():
+            raise FileNotFoundError(
+                f"The image you provided ({str(image_path)}) could not be found!"
+            )
+        img_arr: np.ndarray = np.array(Image.open(image_path))
+        fig: Figure = plt.figure(figsize=(24, 5), layout="constrained")
+        ax = fig.subplot_mosaic(
+            [
+                ["left", "center", "right", "top_right"],
+                ["left", "center", "right", "."],
+            ],
+            width_ratios=[2, 2, 2, 1],
+        )
+
+        # Plot the image
+        ax["top_right"].grid(False)
+        ax["top_right"].axis("off")
+        ax["top_right"].imshow(img_arr)
+
+        # Share y-axis among the three canonical-dimension panels
+        ax["center"].sharey(ax["left"])
+        ax["right"].sharey(ax["left"])
+    else:
+        fig, axes = plt.subplots(
+            figsize=(21, 5), ncols=3, sharey=True, layout="constrained"
+        )
+        ax: dict[str, Axes] = {
+            "left": axes[0],
+            "center": axes[1],
+            "right": axes[2],
+        }
+
+    ax["left"].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
+    ax["left"].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
+    ax["center"].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
+    ax["center"].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
+    ax["right"].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
+    ax["right"].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
+
+    # Handle nans
+    dimu2: Float[np.ndarray, "n"] = np.nan_to_num(dimu2)
+    dimu4: Float[np.ndarray, "n"] = np.nan_to_num(dimu4)
+    dimu6: Float[np.ndarray, "n"] = np.nan_to_num(dimu6)
+
+    # Shared color scale for direct comparison
+    all_dims: np.ndarray = np.concatenate((dimu2, dimu4, dimu6))
+    vmin: float = float(np.min(all_dims))
+    vmax: float = float(np.max(all_dims))
+    if np.isclose(vmin, vmax):
+        vmax = vmin + 1.0
+    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    levels: np.ndarray = np.linspace(vmin, vmax, 21)
+
+    # Surface plot
+    ax["left"].tricontourf(
+        snr, lam, dimu2, levels=levels, cmap="turbo", norm=norm
+    )
+    ax["center"].tricontourf(
+        snr, lam, dimu4, levels=levels, cmap="turbo", norm=norm
+    )
+    cntr_right = ax["right"].tricontourf(
+        snr, lam, dimu6, levels=levels, cmap="turbo", norm=norm
+    )
+    fig.colorbar(
+        cntr_right,
+        ax=ax["right"],
+        label="canonical dimension",
+    )
+
+    ax["left"].set_title(r"$\text{dim}(u_{2})$")
+    ax["center"].set_title(r"$\text{dim}(u_{4})$")
+    ax["right"].set_title(r"$\text{dim}(u_{6})$")
+
+    # Set the labels
+    ax["left"].set(
+        xlabel="signal-to-noise ratio ($\\beta$)",
+        ylabel="Poisson expectation ($\\lambda$)",
+    )
+    ax["left"].ticklabel_format(
+        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+    )
+    ax["center"].set(
+        xlabel="signal-to-noise ratio ($\\beta$)",
+        ylabel="",
+    )
+    ax["center"].ticklabel_format(
+        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+    )
+    ax["right"].set(
+        xlabel="signal-to-noise ratio ($\\beta$)",
+        ylabel="",
+    )
+    ax["right"].ticklabel_format(
+        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+    )
+
+    if suffix is None:
+        plt.savefig(out_dir / "canonical_dimensions2d_snr.pdf")
+    else:
+        plt.savefig(out_dir / f"canonical_dimensions2d_{suffix}.pdf")
 
 
 def plot_ratio_scan(
