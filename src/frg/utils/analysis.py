@@ -1628,8 +1628,8 @@ def plot_potential(
         u4_vals: dict[float, list[float]],
         snr_val: float,
         idx_val: int = 0,
-    ) -> np.ndarray:
-        y_vals: np.ndarray = (
+    ) -> Float[np.ndarray, "n"]:
+        y_vals: Float[np.ndarray, "n"] = (
             u2_vals[snr_val][idx_val] * x_vals**2
             + u4_vals[snr_val][idx_val] * x_vals**4
         )

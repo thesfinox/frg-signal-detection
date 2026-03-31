@@ -1094,7 +1094,7 @@ class EmpiricalDistribution(Distribution):
 
     def _cov_eigh(
         self, X: Float[np.ndarray, "n_samples, n_vars"], is_cov: bool = False
-    ) -> np.ndarray:
+    ) -> Float[np.ndarray, "n_vars"]:
         """
         Get the eigenvalues of the covariance matrix of the data (from the singular values of the data).
 
@@ -1107,8 +1107,8 @@ class EmpiricalDistribution(Distribution):
 
         Returns
         -------
-        np.ndarray
-            The eigenvalues of the distribution.
+        ndarray of floats
+            The eigenvalues of the distribution (shape: :math:`p`).
         """
         if is_cov:
             cov: Float[np.ndarray, "n_vars, n_vars"] = X.copy()
@@ -1128,7 +1128,7 @@ class EmpiricalDistribution(Distribution):
         return evl
 
     @property
-    def eigenvalues(self) -> np.ndarray:
+    def eigenvalues(self) -> Float[np.ndarray, "n_vars"]:
         """
         Compute the eigenvalues of the distribution.
 
@@ -1139,8 +1139,8 @@ class EmpiricalDistribution(Distribution):
 
         Returns
         -------
-        np.ndarray
-            The eigenvalues of the distribution, sorted in ascending order.
+        ndarray of floats
+            The eigenvalues of the distribution, sorted in ascending order (shape: :math:`p`).
         """
         evl: Float[np.ndarray, "n_vars"] = self._cov_eigh(
             self.data, is_cov=self._iscov
