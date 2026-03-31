@@ -65,6 +65,7 @@ frg-evc-distribution = "frg.scripts.evc_distribution:cli"
 frg-equations = "frg.scripts.frg_equations:cli"
 frg-equations-lpa = "frg.scripts.frg_equations_lpa:cli"
 frg-generate-config = "frg.scripts.generate_config:cli"
+frg-plot-canonical-dimensions = "frg.scripts.plot_canonical_dimensions:cli"
 frg-init = "frg.scripts.init:cli"
 
 [tool.setuptools.dynamic]
@@ -74,12 +75,7 @@ version = { attr = "frg.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-frg = [
-    "configs/*.json",
-    "configs/*.yaml",
-    "notebooks/*.ipynb",
-    "scripts/*.sh",
-]
+frg = ["configs/*.json", "configs/*.yaml", "notebooks/*.ipynb", "scripts/*.sh"]
 
 [tool.ruff]
 exclude = [

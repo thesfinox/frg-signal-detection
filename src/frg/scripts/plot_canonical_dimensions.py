@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 """
 Plot Canonical Dimensions
----------------------
+-------------------------
 
 Plot the canonical dimensions as a function of the signal-to-noise ratio. Display the behaviour of the canonical dimensions depending on the type of noise:
 
