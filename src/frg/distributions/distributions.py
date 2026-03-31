@@ -805,7 +805,7 @@ class EmpiricalDistribution(Distribution):
         ValueError
             If the size of the sample is less than 2
         ValueError
-            If variance is not strictly positive
+            If variance is negative
         ValueError
             If ratio is not strictly positive
         ValueError
@@ -831,9 +831,9 @@ class EmpiricalDistribution(Distribution):
                 category=UserWarning,
             )
         self.n_samples: int = int(n_samples)
-        if var <= 0.0:
+        if var < 0.0:
             raise ValueError(
-                "The variance must be strictly positive but got %f <= 0" % var
+                "The variance must be non-negative but got %f < 0" % var
             )
         self.var: float = float(var)
         if ratio <= 0.0:
@@ -864,10 +864,14 @@ class EmpiricalDistribution(Distribution):
 
         # Generate the background distribution
         gen: Generator = np.random.default_rng(self.seed)
-        self._noise: Float[np.ndarray, "n_samples, n_vars"] = gen.normal(
-            loc=0.0,
-            scale=np.sqrt(self.var),
-            size=(self.n_samples, self.n_vars),
+        self._noise: Float[np.ndarray, "n_samples, n_vars"] = (
+            gen.normal(
+                loc=0.0,
+                scale=np.sqrt(self.var),
+                size=(self.n_samples, self.n_vars),
+            )
+            if self.var > 0.0
+            else np.zeros((self.n_samples, self.n_vars))
         )
 
         # Handle Poisson noise
