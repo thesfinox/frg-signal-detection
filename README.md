@@ -207,3 +207,27 @@ The command `frg-evc-distribution` computes the distribution of the eigenvectors
 frg-evc-distribution \
     --config /path/to/config.yaml
 ```
+
+## Contributing
+
+Take a look at the [CONTRIBUTING](CONTRIBUTING.md) file for more information.
+
+To set up the development environment with pre-commit hooks, install `pre-commit` and activate the hooks:
+
+```bash
+pip install pre-commit
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+
+The `commit-msg` hook enables **gitlint** to check your commit messages for consistent formatting.
+
+You can optionally run the pre-commit checks on all files:
+
+```bash
+pre-commit run --all-files
+```
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
