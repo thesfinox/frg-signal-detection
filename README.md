@@ -1,31 +1,16 @@
-# Functional Renormalization for Signal Detection
-
-## Dimensional analysis and dimensional phase transition for nearly continuous spectra effective field theory
+# Functional Renormalization for Signal and Anomaly Detection
 
 - **Riccardo Finotello** - Université Paris Saclay, CEA, *Service de Génie Logiciel et de Simulation* (SGLS), Gif-sur-Yvette, F-91191, France
+- **Parham Radpay** - Université Paris Saclay, CEA, Palaiseau, F-91120, France
 - **Vincent Lahoche** - Université Paris Saclay, CEA, Palaiseau, F-91120, France
 - **Dine Ousmane Samary** - Faculté des Sciences et Techniques (ICMPA-UNESCO Chair), Université d’Abomey-Calavi, 072 BP 50, Benin
 
 [![arXiv](https://img.shields.io/badge/arxiv-2507.01064-red)](https://arxiv.org/abs/2507.01064)
+[![arXiv](https://img.shields.io/badge/arxiv-YYMM.XXXXX-red)](https://arxiv.org/abs/YYMM.YYYYY)
 [![github](https://img.shields.io/badge/github-frg--signal--detection-blue?logo=github)](https://github.com/thesfinox/frg-signal-detection)
 [![Documentation Status](https://readthedocs.org/projects/frg-signal-detection/badge/?version=latest)](https://frg-signal-detection.readthedocs.io/en/latest/)
 
-## Abstract
-
 ![graphical_abstract](./docs/source/_static/abstract.png)
-
-Signal detection is one of the main challenges of data science.
-According to the nature of the data, the presence of noise may corrupt measurements and hinder the discovery of significant patterns.
-A wide range of techniques aiming at extracting the relevant degrees of freedom from data has been thus developed over the years.
-However, signal detection in almost continuous spectra, when the signal-to-noise ratio is small, remains a known difficult issue.
-This paper develops over recent advancements proposing to tackle this issue by analysing the properties of the underlying effective field theory arising as a kind of maximal entropy distribution in the vicinity of universal random matrix distributions.
-Nearly continuous spectra provide an intrinsic and non-conventional scaling law for field and couplings, the scaling dimensions depending on the energy scale.
-The related coarse-graining over small eigenvalues of the empirical spectrum defines a specific renormalisation group, whose characteristics change when the collective behaviour of “informational” modes become significant, that is, stronger than the intrinsic fluctuations of noise.
-This paper pursues three different goals.
-First, we propose to quantify the real effects of fluctuations relative to what can be called “signal”, while improving the robustness of the results obtained in our previous work.
-Second, we show that quantitative changes in the presence of a signal result in a counterintuitive modification of the distribution of eigenvectors.
-Finally, we propose a method for estimating the number of noise components and define a limit of detection in a general nearly continuous spectrum using the renormalisation group.
-The main statements of this paper are essentially numeric, and their reproducibility can be checked using the associated code.
 
 ## Requirements
 
