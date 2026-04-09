@@ -1,0 +1,74 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to create a release for (e.g. v2.3.0)'
+        required: false
+        default: ''
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.tag }}" ]; then
+            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Get tag message
+        id: message
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          git fetch --tags
+          # Extract the tag annotation body (skip the first "subject" line)
+          BODY=$(git tag -l --format='%(contents:body)' "$TAG")
+          echo "body<<EOF_BODY" >> "$GITHUB_OUTPUT"
+          echo "$BODY" >> "$GITHUB_OUTPUT"
+          echo "EOF_BODY" >> "$GITHUB_OUTPUT"
+
+      - name: Convert tag message to Markdown
+        id: markdown
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          # Get full tag message (subject + body)
+          SUBJECT=$(git tag -l --format='%(contents:subject)' "$TAG")
+          BODY=$(git tag -l --format='%(contents:body)' "$TAG")
+
+          # Convert indented section headers to Markdown headings and
+          # normalise leading spaces on bullet lines
+          MARKDOWN=$(echo "$BODY" | sed \
+            -e 's/^    \([A-Z][^:]*:\)$/## \1/' \
+            -e 's/^    - /- /' \
+            -e 's/^        - /    - /' \
+            -e "s/'\([^']*\)'/\`\1\`/g")
+
+          echo "subject=$SUBJECT" >> "$GITHUB_OUTPUT"
+          echo "markdown<<EOF_MD" >> "$GITHUB_OUTPUT"
+          echo "$MARKDOWN" >> "$GITHUB_OUTPUT"
+          echo "EOF_MD" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.markdown.outputs.subject }}
+          body: ${{ steps.markdown.outputs.markdown }}
+          draft: false
+          prerelease: false
