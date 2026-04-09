@@ -32,32 +32,25 @@ jobs:
             echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Get tag message
-        id: message
-        run: |
-          TAG="${{ steps.tag.outputs.name }}"
-          git fetch --tags
-          # Extract the tag annotation body (skip the first "subject" line)
-          BODY=$(git tag -l --format='%(contents:body)' "$TAG")
-          echo "body<<EOF_BODY" >> "$GITHUB_OUTPUT"
-          echo "$BODY" >> "$GITHUB_OUTPUT"
-          echo "EOF_BODY" >> "$GITHUB_OUTPUT"
-
       - name: Convert tag message to Markdown
         id: markdown
         run: |
           TAG="${{ steps.tag.outputs.name }}"
+          git fetch --tags
           # Get full tag message (subject + body)
           SUBJECT=$(git tag -l --format='%(contents:subject)' "$TAG")
           BODY=$(git tag -l --format='%(contents:body)' "$TAG")
 
           # Convert indented section headers to Markdown headings and
-          # normalise leading spaces on bullet lines
-          MARKDOWN=$(echo "$BODY" | sed \
+          # normalise leading spaces on bullet lines.
+          # Use single-quoted sed expressions to avoid unintended shell expansion;
+          # the backtick substitution is handled via a shell variable.
+          BT='`'
+          MARKDOWN=$(printf '%s\n' "$BODY" | sed \
             -e 's/^    \([A-Z][^:]*:\)$/## \1/' \
             -e 's/^    - /- /' \
             -e 's/^        - /    - /' \
-            -e "s/'\([^']*\)'/\`\1\`/g")
+            -e "s/'\\([^']*\\)'/${BT}\\1${BT}/g")
 
           echo "subject=$SUBJECT" >> "$GITHUB_OUTPUT"
           echo "markdown<<EOF_MD" >> "$GITHUB_OUTPUT"
