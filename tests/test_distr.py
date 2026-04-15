@@ -1,5 +1,4 @@
-"""
-Distribution test
+"""Distribution test.
 
 Test functions and methods of the base distribution class.
 """
@@ -11,7 +10,7 @@ from frg.distributions.distributions import Distribution
 
 
 class TestBaseDistribution:
-    """Test the base distribution"""
+    """Test the base distribution."""
 
     dist = Distribution()
 

@@ -1,5 +1,4 @@
-"""
-``frg`` is a Python package to deal with the functional renormalisation group for signal detection. It leverages the action of the RG on different sources of signal to compute a limit of detection and assess the presence of a signal.
+"""``frg`` is a Python package to deal with the functional renormalisation group for signal detection. It leverages the action of the RG on different sources of signal to compute a limit of detection and assess the presence of a signal.
 
 The work is based on `theoretical advancements <https://arxiv.org/abs/2201.04250>`__ and previous `numerical works <https://arxiv.org/abs/2310.07499>`__ and `improvements <https://arxiv.org/abs/2507.01064>`__.
 """
@@ -47,13 +46,13 @@ __url__ = "https://github.com/thesfinox/frg-signal-detection"
 
 # Package imports
 __all__ = [
+    "EmpiricalDistribution",
+    "MarchenkoPastur",
     "__author__",
     "__email__",
     "__license__",
     "__url__",
     "__version__",
-    "EmpiricalDistribution",
-    "MarchenkoPastur",
     "add_values",
     "canonical_dimensions_argsort",
     "canonical_dimensions_files",

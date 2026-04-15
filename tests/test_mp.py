@@ -1,5 +1,4 @@
-"""
-Test the  distributions
+"""Test the  distributions.
 
 Test the Marchenko-Pastur distribution.
 """
@@ -12,10 +11,10 @@ from frg.distributions.distributions import MarchenkoPastur
 
 
 class TestMarchenkoPastur:
-    """Test the Marchenko-Pastur distribution"""
+    """Test the Marchenko-Pastur distribution."""
 
     def test_init(self):
-        """Test the constructor of the class"""
+        """Test the constructor of the class."""
         # Assert raise if ratio <= 0
         with pytest.raises(ValueError):
             MarchenkoPastur(0.0, 1.0)
@@ -34,7 +33,7 @@ class TestMarchenkoPastur:
         assert mp.lminus == 1.0**2 * (1.0 - np.sqrt(0.5)) ** 2
 
     def test_pdf(self):
-        """Test the computation of the PDF"""
+        """Test the computation of the PDF."""
         mp = MarchenkoPastur(0.5, 1.0)
         assert mp.pdf(0.0) == 0.0  # Test den != 0 logic
         assert mp.pdf(50.0) == 0.0
@@ -45,7 +44,7 @@ class TestMarchenkoPastur:
         assert quad(mp.pdf, mp.lminus, mp.lplus)[0] == pytest.approx(1.0)
 
     def test_cdf(self):
-        """Test the computation of the CDF"""
+        """Test the computation of the CDF."""
         mp = MarchenkoPastur(0.5, 1.0)
         assert mp.cdf(0.0) == 0.0
         assert mp.cdf(50.0) == 1.0
@@ -61,7 +60,7 @@ class TestMarchenkoPastur:
         assert mp.cdf(2.0) == mp.cdf(2.0)
 
     def test_dpdf(self):
-        """Test the computation of the derivative of the PDF"""
+        """Test the computation of the derivative of the PDF."""
         mp = MarchenkoPastur(0.5, 1.0)
         assert mp.dpdf(0.0) == 0.0
         assert mp.dpdf(50.0) == 0.0
@@ -69,7 +68,7 @@ class TestMarchenkoPastur:
         assert (mp.dpdf([0.0, 50.0]) == np.array([0.0, 0.0])).all()
 
     def test_ipdf(self):
-        """Test the computation of the inverse PDF (momenta)"""
+        """Test the computation of the inverse PDF (momenta)."""
         mp = MarchenkoPastur(0.5, 1.0)
         assert mp.ipdf(0.0) == 0.0
         assert mp.ipdf(0.000001) > 0.0
@@ -80,7 +79,7 @@ class TestMarchenkoPastur:
         assert isinstance(mp.lnipdf([0.000001, 50.0]), np.ndarray)
 
     def test_icdf(self):
-        """Test the computation of the inverse CDF (momenta)"""
+        """Test the computation of the inverse CDF (momenta)."""
         mp = MarchenkoPastur(0.5, 1.0)
         assert mp.icdf(0.0) == 0.0
         assert 0.0 < mp.icdf(50.0) < 1.0
@@ -90,7 +89,7 @@ class TestMarchenkoPastur:
         assert all((y[1:] - y[:-1]) >= 0.0)  # test monotonic increasing
 
     def test_dipdf(self):
-        """Test the computation of the derivative of the inverse PDF"""
+        """Test the computation of the derivative of the inverse PDF."""
         mp = MarchenkoPastur(0.5, 1.0)
         x = np.linspace(1.0, 10.0, 100)
         y = mp.dipdf(x)
@@ -100,7 +99,7 @@ class TestMarchenkoPastur:
         assert mp.dlnipdf(2.0) != 0.0
 
     def test_canonical_dimensions(self):
-        """Test the computation of the canonical dimensions"""
+        """Test the computation of the canonical dimensions."""
         mp = MarchenkoPastur(0.5, 1.0)
         x = np.linspace(0.0, 3.0, 100)
         dimu2, dimu4, dimu6, dimchi = mp.canonical_dimensions(x).T
@@ -115,7 +114,7 @@ class TestMarchenkoPastur:
         assert isinstance(dimchi, float)
 
     def test_frg_equations(self):
-        """Test the computation of the FRG equations"""
+        """Test the computation of the FRG equations."""
         mp = MarchenkoPastur(0.5, 1.0)
         x = 1.0e-5
         u2, u4, u6 = mp._frg_equations_single(
@@ -142,7 +141,11 @@ class TestMarchenkoPastur:
         assert isinstance(rhs, np.ndarray)
 
         k2_scipy, kappa_s, u4_s, u6_s = mp.frg_equations_lpa(
-            x, 1e-5, 1e-5, 1e-5, use_naive_euler=False
+            x,
+            1e-5,
+            1e-5,
+            1e-5,
+            use_naive_euler=False,
         ).T
         assert isinstance(k2_scipy, np.ndarray)
 
@@ -150,14 +153,16 @@ class TestMarchenkoPastur:
         assert isinstance(rhs, np.ndarray)
 
         k2_scipy, u2_s, u4_s, u6_s = mp.frg_equations(
-            x, 1e-5, 1e-5, 1e-5, use_naive_euler=False
+            x,
+            1e-5,
+            1e-5,
+            1e-5,
+            use_naive_euler=False,
         ).T
         assert isinstance(k2_scipy, np.ndarray)
 
     def test_frg_equations_lpa(self):
-        """
-        Test the computations of the FRG equations in Local Potential Approximation
-        """
+        """Test the computations of the FRG equations in Local Potential Approximation."""
         mp = MarchenkoPastur(0.5, 1.0)
         x = 1.0e-5
         kappa, u4, u6 = mp._frg_equations_lpa_single(

@@ -1,5 +1,4 @@
-"""
-Test Analysis
+"""Test Analysis.
 
 Test the analysis utilities
 """
@@ -172,14 +171,23 @@ def test_localization_plots(mock_savefig, tmp_path):
     }
     plot_localization(data, output_dir=tmp_path)
     plot_localization_scan(
-        [0.1], [1.0], [0.1], [0.0], [0.1], output_dir=tmp_path
+        [0.1],
+        [1.0],
+        [0.1],
+        [0.0],
+        [0.1],
+        output_dir=tmp_path,
     )
 
 
 @patch("matplotlib.pyplot.savefig")
 def test_symmetry_plots(mock_savefig, tmp_path):
     plot_symmetry_surface(
-        [1, 0], [0.1, 0.2], [0.3, 0.4], [0.5, 0.6], output_dir=tmp_path
+        [1, 0],
+        [0.1, 0.2],
+        [0.3, 0.4],
+        [0.5, 0.6],
+        output_dir=tmp_path,
     )
 
 

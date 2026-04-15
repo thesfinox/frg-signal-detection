@@ -1,5 +1,4 @@
-"""
-Test the empirical distribution
+"""Test the empirical distribution.
 
 Test functions and methods of the empirical distribution data class.
 """
@@ -12,10 +11,10 @@ from frg.utils.utils import get_cfg_defaults
 
 
 class TestEmpiricalDistribution:
-    """Test the empirical distribution"""
+    """Test the empirical distribution."""
 
     def test_init(self):
-        """Test the constructor of the class"""
+        """Test the constructor of the class."""
         # Assert raise if n_samples < 2
         with pytest.raises(ValueError):
             EmpiricalDistribution(n_samples=1)
@@ -33,13 +32,17 @@ class TestEmpiricalDistribution:
         # Assert raise if poisson_lam < 0
         with pytest.raises(ValueError):
             EmpiricalDistribution(
-                n_samples=2000, is_poisson=True, poisson_lam=-1.0
+                n_samples=2000,
+                is_poisson=True,
+                poisson_lam=-1.0,
             )
 
         # Assert raise if bad poisson_centering
         with pytest.raises(ValueError):
             EmpiricalDistribution(
-                n_samples=2000, is_poisson=True, poisson_centering="wrong"
+                n_samples=2000,
+                is_poisson=True,
+                poisson_centering="wrong",
             )
 
         # Warning if 2 < n_samples < 1000
@@ -149,7 +152,7 @@ class TestEmpiricalDistribution:
             emp.icdf(1.0)
 
     def test_from_config(self):
-        """Test the from_config method of the class"""
+        """Test the from_config method of the class."""
         cfg = get_cfg_defaults()
         emp = EmpiricalDistribution.from_config(cfg)
         assert emp.n_samples == 1000
@@ -159,7 +162,7 @@ class TestEmpiricalDistribution:
         assert emp.seed == 42
 
     def test_from_covariance(self):
-        """Test the from_covariance method of the class"""
+        """Test the from_covariance method of the class."""
         cfg = get_cfg_defaults()
         X = np.random.randn(100, 50)
         cov = np.cov(X, rowvar=False)
@@ -173,7 +176,7 @@ class TestEmpiricalDistribution:
         assert (emp.data == cov).all()
 
     def test_add_signal(self):
-        """Test the add_signal method of the class"""
+        """Test the add_signal method of the class."""
         emp = EmpiricalDistribution(n_samples=1024, var=1.0, ratio=0.5)
         X = np.random.randn(1024, 512)
 
@@ -208,7 +211,7 @@ class TestEmpiricalDistribution:
             emp_cov.add_signal(X, snr=1.0)
 
     def test_fit(self):
-        """Test the fit method of the class"""
+        """Test the fit method of the class."""
         emp = EmpiricalDistribution(n_samples=1024, var=1.0, ratio=0.5)
         X = np.random.randn(1024, 512)
         emp.fit(X, snr=0.5)
@@ -228,10 +231,12 @@ class TestEmpiricalDistribution:
         assert emp.cdf(emp.lplus + 1.0) == 1.0
 
         assert isinstance(
-            emp.pdf(np.array([emp.lminus - 1.0, emp.lplus + 1.0])), np.ndarray
+            emp.pdf(np.array([emp.lminus - 1.0, emp.lplus + 1.0])),
+            np.ndarray,
         )
         assert isinstance(
-            emp.cdf(np.array([emp.lminus - 1.0, emp.lplus + 1.0])), np.ndarray
+            emp.cdf(np.array([emp.lminus - 1.0, emp.lplus + 1.0])),
+            np.ndarray,
         )
 
         # ICDF testing

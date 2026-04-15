@@ -1,20 +1,5 @@
 #! /usr/bin/env python3
-"""
-Eigenvector Components
-----------------------
-
-Study the distribution of the eigenvectors at different levels of signal-to-noise ratio.
-
-Authors
--------
-
-- Riccardo Finotello <riccardo.finotello@cea.fr>
-
-Maintainer
-----------
-
-- Riccardo Finotello
-"""
+"""Study the distribution of the eigenvectors at different levels of signal-to-noise ratio."""
 
 from __future__ import annotations
 
@@ -50,11 +35,14 @@ __epilog__: str = (
 
 def main(argv: list[str] | None = None) -> int | str:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
-        description=__description__, epilog=__epilog__
+        description=__description__,
+        epilog=__epilog__,
     )
     parser.add_argument("--config", required=False, help="Configuration file")
     parser.add_argument(
-        "--print_config", action="store_true", help="Print configuration"
+        "--print_config",
+        action="store_true",
+        help="Print configuration",
     )
     parser.add_argument(
         "--args",
@@ -63,7 +51,11 @@ def main(argv: list[str] | None = None) -> int | str:
         help="Additional configuration arguments (see YACS documentation)",
     )
     parser.add_argument(
-        "-v", dest="verb", action="count", default=0, help="Verbosity level"
+        "-v",
+        dest="verb",
+        action="count",
+        default=0,
+        help="Verbosity level",
     )
     a: argparse.Namespace = parser.parse_args(argv)
 
@@ -85,7 +77,7 @@ def main(argv: list[str] | None = None) -> int | str:
         else:
             logger.error("Configuration file %s does not exist!", cfg_file)
             raise FileNotFoundError(
-                "Configuration file %s does not exist!" % cfg_file
+                "Configuration file %s does not exist!" % cfg_file,
             )
     cfg.merge_from_list(a.args)
     cfg.freeze()
@@ -97,9 +89,9 @@ def main(argv: list[str] | None = None) -> int | str:
     # Run the simulation
     logger.info("Computing the distribution of the eigenvectors...")
     dist: EmpiricalDistribution = load_data(cfg)
-    evl: Float[np.ndarray, "p"] = dist.eigenvalues
+    evl: Float[np.ndarray, p] = dist.eigenvalues
     if dist.eigenvectors_ is not None:
-        evc: Float[np.ndarray, "p, p"] = dist.eigenvectors_
+        evc: Float[np.ndarray, p, p] = dist.eigenvectors_
 
     # Save the distribution of the eigenvectors
     output_dir: Path = Path(os.path.expandvars(cfg.DATA.OUTPUT_DIR)).absolute()
@@ -116,14 +108,14 @@ def main(argv: list[str] | None = None) -> int | str:
     m2_mp: float | None = getattr(dist, "m2_mp", None)
     if m2_mp is not None:
         payload["m2_mp"]: float = m2_mp
-    with open(output_file, "w") as f:
+    with Path(output_file).open("w") as f:
         json.dump(payload, f)
     logger.info("Results saved in %s" % output_file)
 
     return 0
 
 
-def cli():
+def cli():  # noqa
     raise SystemExit(main())
 
 

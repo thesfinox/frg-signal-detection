@@ -1,19 +1,4 @@
-"""
-Data Analysis
--------------
-
-Functions used for data analysis.
-
-Authors
--------
-
-- Riccardo Finotello <riccardo.finotello@cea.fr>
-
-Maintainers
------------
-
-- Riccardo Finotello
-"""
+"""Functions used for data analysis."""
 
 from __future__ import annotations
 
@@ -33,7 +18,8 @@ from PIL import Image
 from frg.distributions.distributions import Distribution, MarchenkoPastur
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Generator
+    from collections.abc import Callable, Generator
+    from typing import Any
 
     from jaxtyping import Float, Integer
     from matplotlib.axes import Axes
@@ -48,10 +34,11 @@ if TYPE_CHECKING:
 
 
 def _ema(
-    x: Float[np.ndarray, "n"], y: Float[np.ndarray, "n"], win: int
-) -> tuple[Float[np.ndarray, "nV"], Float[np.ndarray, "nV"]]:
-    """
-    Exponential movin average (EMA).
+    x: Float[np.ndarray, n],
+    y: Float[np.ndarray, n],
+    win: int,
+) -> tuple[Float[np.ndarray, nV], Float[np.ndarray, nV]]:
+    """Exponential movin average (EMA).
 
     Parameters
     ----------
@@ -67,15 +54,15 @@ def _ema(
     tuple of arrays of floats
         The smoothed list of x and y (shape: ).
     """
-    x_arr: Float[np.ndarray, "n"] = np.array(x)
-    y_arr: Float[np.ndarray, "n"] = np.array(y)
+    x_arr: Float[np.ndarray, n] = np.array(x)
+    y_arr: Float[np.ndarray, n] = np.array(y)
 
     # Window
-    win_list: Float[np.ndarray, "w"] = np.ones((win,)) / win
+    win_list: Float[np.ndarray, w] = np.ones((win,)) / win
 
     # Convolution
-    new_x: Float[np.ndarray, "nV"] = np.convolve(x_arr, win_list, mode="valid")
-    new_y: Float[np.ndarray, "nV"] = np.convolve(y_arr, win_list, mode="valid")
+    new_x: Float[np.ndarray, nV] = np.convolve(x_arr, win_list, mode="valid")
+    new_y: Float[np.ndarray, nV] = np.convolve(y_arr, win_list, mode="valid")
     return new_x, new_y
 
 
@@ -84,8 +71,7 @@ def compute_roi(
     thresh: float = 0.5,
     analytic: bool = False,
 ) -> tuple[int, int, int]:
-    """
-    Compute the indices of the region of interest, and its initial and final points.
+    """Compute the indices of the region of interest, and its initial and final points.
 
     Parameters
     ----------
@@ -114,10 +100,10 @@ def compute_roi(
 
 
 def interp_canonical_dimensions(
-    data: dict[str, Any], idx: int
+    data: dict[str, Any],
+    idx: int,
 ) -> tuple[Callable, Callable, Callable]:
-    """
-    Interpolate the behaviour of the canonical dimensions.
+    """Interpolate the behaviour of the canonical dimensions.
 
     Parameters
     ----------
@@ -133,22 +119,23 @@ def interp_canonical_dimensions(
     """
     stop: int = int(np.argmin(np.abs(np.array(data["k2"]) - 0.7)))
     dimu2_interp: Callable = np.poly1d(
-        np.polyfit(data["k2"][idx:stop], data["dimu2"][idx:stop], 1)
+        np.polyfit(data["k2"][idx:stop], data["dimu2"][idx:stop], 1),
     )
     dimu4_interp: Callable = np.poly1d(
-        np.polyfit(data["k2"][idx:stop], data["dimu4"][idx:stop], 1)
+        np.polyfit(data["k2"][idx:stop], data["dimu4"][idx:stop], 1),
     )
     dimu6_interp: Callable = np.poly1d(
-        np.polyfit(data["k2"][idx:stop], data["dimu6"][idx:stop], 1)
+        np.polyfit(data["k2"][idx:stop], data["dimu6"][idx:stop], 1),
     )
     return dimu2_interp, dimu4_interp, dimu6_interp
 
 
 def extract_interp_values(
-    data: dict[str, Any], thresh: float = 0.5, deep_ir: bool = False
+    data: dict[str, Any],
+    thresh: float = 0.5,
+    deep_ir: bool = False,
 ) -> tuple[float, float, float, float]:
-    """
-    Extract the interpolated values.
+    r"""Extract the interpolated values.
 
     Parameters
     ----------
@@ -162,7 +149,7 @@ def extract_interp_values(
     Returns
     -------
     tuple[float, float, float, float]
-        The values of :math:`k^2`, :math:`\\text{dim}(u_{2})`, :math:`\\text{dim}(u_{4})`, and :math:`\\text{dim}(u_{6})` at the reference scale.
+        The values of :math:`k^2`, :math:`\text{dim}(u_{2})`, :math:`\text{dim}(u_{4})`, and :math:`\text{dim}(u_{6})` at the reference scale.
     """
     idx: int
     idx, _, _ = compute_roi(data, thresh, analytic=deep_ir)
@@ -170,7 +157,8 @@ def extract_interp_values(
     dimu4_interp: Callable
     dimu6_interp: Callable
     dimu2_interp, dimu4_interp, dimu6_interp = interp_canonical_dimensions(
-        data, idx
+        data,
+        idx,
     )
 
     k2: float = float(data["k2"][idx]) if not deep_ir else 0.0
@@ -183,18 +171,17 @@ def extract_interp_values(
 
 
 def canonical_dimensions_argsort(
-    x: Float[np.ndarray, "n"] | list[float],
-    dimu2: Float[np.ndarray, "n"] | list[float],
-    dimu4: Float[np.ndarray, "n"] | list[float],
-    dimu6: Float[np.ndarray, "n"] | list[float],
+    x: Float[np.ndarray, n] | list[float],
+    dimu2: Float[np.ndarray, n] | list[float],
+    dimu4: Float[np.ndarray, n] | list[float],
+    dimu6: Float[np.ndarray, n] | list[float],
 ) -> tuple[
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
 ]:
-    """
-    Index sort the signal to noise ratio and the canonical dimensions.
+    """Index sort the signal to noise ratio and the canonical dimensions.
 
     Parameters
     ----------
@@ -212,26 +199,27 @@ def canonical_dimensions_argsort(
     tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         A tuple containing the signal-to-noise ratio and the canonical dimensions in the same order as the input parameters.
     """
-    x_arr: Float[np.ndarray, "n"] = np.array(x)
-    dimu2_arr: Float[np.ndarray, "n"] = np.array(dimu2)
-    dimu4_arr: Float[np.ndarray, "n"] = np.array(dimu4)
-    dimu6_arr: Float[np.ndarray, "n"] = np.array(dimu6)
+    x_arr: Float[np.ndarray, n] = np.array(x)
+    dimu2_arr: Float[np.ndarray, n] = np.array(dimu2)
+    dimu4_arr: Float[np.ndarray, n] = np.array(dimu4)
+    dimu6_arr: Float[np.ndarray, n] = np.array(dimu6)
 
-    idx: Integer[np.ndarray, "n"] = np.argsort(x_arr)
+    idx: Integer[np.ndarray, n] = np.argsort(x_arr)
 
     return x_arr[idx], dimu2_arr[idx], dimu4_arr[idx], dimu6_arr[idx]
 
 
 def canonical_dimensions_files(
-    path: str | Path, glob: str = "*.json", analytic: bool = False
+    path: str | Path,
+    glob: str = "*.json",
+    analytic: bool = False,
 ) -> tuple[
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
 ]:
-    """
-    Open multiple files and stores the canonical dimensions.
+    """Open multiple files and stores the canonical dimensions.
 
     Parameters
     ----------
@@ -256,7 +244,7 @@ def canonical_dimensions_files(
     files: Generator[Path, None, None] = Path(path).glob(glob)
 
     for file in files:
-        with open(file) as f:
+        with Path(file).open() as f:
             data: dict[str, Any] = json.load(f)
         add_values(
             extract_interp_values(data, deep_ir=analytic),
@@ -266,7 +254,7 @@ def canonical_dimensions_files(
             dimu6,
         )
 
-        value: re.Match[str] | None = re.search("[0-9][.][0-9]*", file.stem)
+        value: re.Match[str] | None = re.search(r"[0-9][.][0-9]*", file.stem)
         if value:
             x.append(float(value.group()))
 
@@ -274,16 +262,16 @@ def canonical_dimensions_files(
 
 
 def canonical_dimensions_files_poiss(
-    path: str | Path, glob: str = "*.json"
+    path: str | Path,
+    glob: str = "*.json",
 ) -> tuple[
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
-    Float[np.ndarray, "n"],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
+    Float[np.ndarray, n],
 ]:
-    """
-    Open multiple files and stores the canonical dimensions in case of Poisson noise.
+    """Open multiple files and stores the canonical dimensions in case of Poisson noise.
 
     Parameters
     ----------
@@ -307,7 +295,7 @@ def canonical_dimensions_files_poiss(
     files: Generator[Path, None, None] = Path(path).glob(glob)
 
     for file in files:
-        with open(file) as f:
+        with Path(file).open() as f:
             data: dict[str, Any] = json.load(f)
         add_values(
             extract_interp_values(data),
@@ -318,13 +306,15 @@ def canonical_dimensions_files_poiss(
         )
 
         snr_value: re.Match[str] | None = re.search(
-            "snr=[0-9]*[.][0-9]*", file.stem
+            r"snr=[0-9]*[.][0-9]*",
+            file.stem,
         )
         if snr_value:
             snr_float: float = float(snr_value.group()[4:])
             snr.append(snr_float)
         lam_value: re.Match[str] | None = re.search(
-            "lam=[0-9]*[.][0-9]*", file.stem
+            r"lam=[0-9]*[.][0-9]*",
+            file.stem,
         )
         if lam_value:
             lam_float: float = float(lam_value.group()[4:])
@@ -340,10 +330,11 @@ def canonical_dimensions_files_poiss(
 
 
 def canonical_dimensions_ratio_files(
-    path: str | Path, glob: str = "*.json", analytic: bool = False
+    path: str | Path,
+    glob: str = "*.json",
+    analytic: bool = False,
 ) -> pd.DataFrame:
-    """
-    Open multiple files as a function of ratio and seed and stores the canonical dimensions.
+    """Open multiple files as a function of ratio and seed and stores the canonical dimensions.
 
     Parameters
     ----------
@@ -369,7 +360,7 @@ def canonical_dimensions_ratio_files(
     files: Generator[Path, None, None] = Path(path).glob(glob)
 
     for file in files:
-        with open(file) as f:
+        with Path(file).open() as f:
             data: dict[str, Any] = json.load(f)
         add_values(
             extract_interp_values(data, deep_ir=analytic),
@@ -380,28 +371,27 @@ def canonical_dimensions_ratio_files(
         )
 
         ratio_match: re.Match[str] | None = re.search(
-            "_ratio=[0-9][.][0-9]*?_", str(file)
+            r"_ratio=[0-9][.][0-9]*?_",
+            str(file),
         )
         if ratio_match:
             ratio_str: str = ratio_match.group()[1:-1]
-            ratio: float = float(ratio_str.split("=")[-1])
+            ratio: float = float(ratio_str.rsplit("=", maxsplit=1)[-1])
             ratio_l.append(ratio)
 
-        seed_match: re.Match[str] | None = re.search("_seed=[0-9]*", str(file))
+        seed_match: re.Match[str] | None = re.search(r"_seed=[0-9]*", str(file))
         if seed_match:
             seed_str: str = seed_match.group()[1:]
-            seed: int = int(seed_str.split("=")[-1])
+            seed: int = int(seed_str.rsplit("=", maxsplit=1)[-1])
             seed_l.append(seed)
 
-    return pd.DataFrame(
-        {
-            "ratio": ratio_l,
-            "seed": seed_l,
-            "dimu2": dimu2,
-            "dimu4": dimu4,
-            "dimu6": dimu6,
-        }
-    )
+    return pd.DataFrame({
+        "ratio": ratio_l,
+        "seed": seed_l,
+        "dimu2": dimu2,
+        "dimu4": dimu4,
+        "dimu6": dimu6,
+    })
 
 
 def add_values(
@@ -411,21 +401,20 @@ def add_values(
     dimu4: list[float],
     dimu6: list[float],
 ) -> None:
-    """
-    Add values to lists.
+    r"""Add values to lists.
 
     Parameters
     ----------
     interp_values : tuple[float, float, float, float]
-        The interpolated values of :math:`k^2`, :math:`\\text{dim}(u_{2})`, :math:`\\text{dim}(u_{4})`, :math:`\\text{dim}(u_{6})`.
+        The interpolated values of :math:`k^2`, :math:`\text{dim}(u_{2})`, :math:`\text{dim}(u_{4})`, :math:`\text{dim}(u_{6})`.
     scale : list[float]
         The list of values of the reference scale :math:`k^2`.
     dimu2 : list[float]
-        The list of values of :math:`\\text{dim}(u_{2})`.
+        The list of values of :math:`\text{dim}(u_{2})`.
     dimu4 : list[float]
-        The list of values of :math:`\\text{dim}(u_{4})`.
+        The list of values of :math:`\text{dim}(u_{4})`.
     dimu6 : list[float]
-        The list of values of :math:`\\text{dim}(u_{6})`.
+        The list of values of :math:`\text{dim}(u_{6})`.
     """
     k2: float
     dimu2_value: float
@@ -439,10 +428,10 @@ def add_values(
 
 
 def plot_distribution(
-    dist: Distribution, output_dir: str | Path = "plots"
+    dist: Distribution,
+    output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot distributions.
+    """Plot distributions.
 
     Parameters
     ----------
@@ -461,21 +450,24 @@ def plot_distribution(
     # Show axes
     ax[0].axhline(0.0, ls="dashed", color="k", alpha=0.15)
     ax[0].axvline(0.0, ls="dashed", color="k", alpha=0.15)
-    ax[0].set(xlabel="$\\lambda$", ylabel="$\\mu$")
+    ax[0].set(xlabel=r"$\lambda$", ylabel=r"$\mu$")
     ax[1].axhline(0.0, ls="dashed", color="k", alpha=0.15)
     ax[1].axvline(0.0, ls="dashed", color="k", alpha=0.15)
-    ax[1].set(xlabel="$k^2$", ylabel="$\\rho$")
+    ax[1].set(xlabel="$k^2$", ylabel="$\rho$")
 
     if isinstance(dist, MarchenkoPastur):
         # PDF
-        x: Float[np.ndarray, "5000"] = np.linspace(
-            0.0, 1.05 * dist.lplus, num=5000
+        x: Float[np.ndarray, 5000] = np.linspace(
+            0.0,
+            1.05 * dist.lplus,
+            num=5000,
         )
-        y: Float[np.ndarray, "5000"] = dist.pdf(x)
+        y: Float[np.ndarray, 5000] = dist.pdf(x)
         ax[0].plot(x, y, "k-")
 
         ax_inset = ax[0].inset_axes(
-            [0.35, 1.55, 1.5, 1.5], transform=ax[0].transData
+            [0.35, 1.55, 1.5, 1.5],
+            transform=ax[0].transData,
         )
         ax_inset.plot(x, y, "k-")
         ax_inset.axhline(0.0, ls="dashed", color="k", alpha=0.15)
@@ -486,7 +478,8 @@ def plot_distribution(
         ax[0].indicate_inset_zoom(ax_inset, edgecolor="k")
 
         ax_inset = ax[0].inset_axes(
-            [2.5, 0.75, 1.5, 1.5], transform=ax[0].transData
+            [2.5, 0.75, 1.5, 1.5],
+            transform=ax[0].transData,
         )
         ax_inset.plot(x, y, "k-")
         ax_inset.axhline(0.0, ls="dashed", color="k", alpha=0.15)
@@ -498,12 +491,13 @@ def plot_distribution(
         ax[0].indicate_inset_zoom(ax_inset, edgecolor="k")
 
         # PDF of the inverse
-        x_inv: Float[np.ndarray, "1000"] = np.linspace(0.0, 3.0, num=1000)
-        y_inv: Float[np.ndarray, "1000"] = dist.ipdf(x_inv)
+        x_inv: Float[np.ndarray, 1000] = np.linspace(0.0, 3.0, num=1000)
+        y_inv: Float[np.ndarray, 1000] = dist.ipdf(x_inv)
         ax[1].plot(x_inv, y_inv, "k-")
 
         ax_inset = ax[1].inset_axes(
-            [0.95, 0.45, 1.15, 0.35], transform=ax[1].transData
+            [0.95, 0.45, 1.15, 0.35],
+            transform=ax[1].transData,
         )
         ax_inset.plot(x_inv, y_inv, "k-")
         ax_inset.axhline(0.0, ls="dashed", color="k", alpha=0.15)
@@ -514,10 +508,11 @@ def plot_distribution(
         ax[1].indicate_inset_zoom(ax_inset, edgecolor="k")
 
         plt.savefig(
-            out_dir / f"marchenkopastur_ratio={dist.ratio}_sigma={dist.var}.pdf"
+            out_dir
+            / f"marchenkopastur_ratio={dist.ratio}_sigma={dist.var}.pdf",
         )
     else:
-        evls: Float[np.ndarray, "p"] = dist.eigenvalues_
+        evls: Float[np.ndarray, p] = dist.eigenvalues_
 
         # PDF
         ax[0].hist(
@@ -528,20 +523,22 @@ def plot_distribution(
             density=True,
         )
 
-        x_emp: Float[np.ndarray, "1000"] = np.linspace(
-            0.0, 1.05 * dist.lplus, num=1000
+        x_emp: Float[np.ndarray, 1000] = np.linspace(
+            0.0,
+            1.05 * dist.lplus,
+            num=1000,
         )
-        y_emp: Float[np.ndarray, "1000"] = dist.pdf(x_emp)
+        y_emp: Float[np.ndarray, 1000] = dist.pdf(x_emp)
         ax[0].plot(x_emp, y_emp, "k-")
 
         # PDF of the inverse
-        x_inv_emp: Float[np.ndarray, "1000"] = np.linspace(0.0, 3.0, num=1000)
-        y_inv_emp: Float[np.ndarray, "1000"] = dist.ipdf(x_inv_emp)
+        x_inv_emp: Float[np.ndarray, 1000] = np.linspace(0.0, 3.0, num=1000)
+        y_inv_emp: Float[np.ndarray, 1000] = dist.ipdf(x_inv_emp)
         ax[1].plot(x_inv_emp, y_inv_emp, "k-")
 
         plt.savefig(
             out_dir
-            / f"empirical_dist_ratio={dist.ratio}_sigma={dist.var}_nsamples={dist.n_samples}.pdf"
+            / f"empirical_dist_ratio={dist.ratio}_sigma={dist.var}_nsamples={dist.n_samples}.pdf",
         )
 
 
@@ -552,8 +549,7 @@ def plot_canonical_dimensions(
     analytic: bool = False,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot a single instance of the canonical dimensions.
+    """Plot a single instance of the canonical dimensions.
 
     Parameters
     ----------
@@ -609,7 +605,8 @@ def plot_canonical_dimensions(
         dimu4_interp: Callable
         dimu6_interp: Callable
         dimu2_interp, dimu4_interp, dimu6_interp = interp_canonical_dimensions(
-            data, idx
+            data,
+            idx,
         )
 
         ax.plot(
@@ -645,7 +642,7 @@ def plot_canonical_dimensions(
         ax.text(
             x=k2_idx * 1.1,
             y=dimu2_interp(k2_idx),
-            s=f"$\\text{{dim}}(u_2) = {dimu2_interp(k2_idx):.2f}$",
+            s=f"$\text{{dim}}(u_2) = {dimu2_interp(k2_idx):.2f}$",
             color="r",
             fontsize=10,
             ha="left",
@@ -655,7 +652,7 @@ def plot_canonical_dimensions(
         ax.text(
             x=k2_idx * 1.1,
             y=dimu4_interp(k2_idx),
-            s=f"$\\text{{dim}}(u_4) = {dimu4_interp(k2_idx):.2f}$",
+            s=f"$\text{{dim}}(u_4) = {dimu4_interp(k2_idx):.2f}$",
             color="g",
             fontsize=10,
             ha="left",
@@ -665,7 +662,7 @@ def plot_canonical_dimensions(
         ax.text(
             x=k2_idx * 1.1,
             y=dimu6_interp(k2_idx),
-            s=f"$\\text{{dim}}(u_6) = {dimu6_interp(k2_idx):.2f}$",
+            s=f"$\text{{dim}}(u_6) = {dimu6_interp(k2_idx):.2f}$",
             color="b",
             fontsize=10,
             ha="left",
@@ -675,7 +672,10 @@ def plot_canonical_dimensions(
     ax.set_xlabel(r"$k^2$")
     ax.set_ylabel("canonical dimensions")
     ax.ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax.legend(
         loc="upper center",
@@ -693,19 +693,84 @@ def plot_canonical_dimensions(
         plt.savefig(out_dir / f"canonical_dimensions_{suffix}.pdf")
 
 
+def _setup_figure(
+    image: str | Path | None,
+) -> tuple[Figure, Axes | dict[str, Axes]]:
+    """Set up the figure for plotting.
+
+    Returns
+    -------
+    tuple[Figure, Axes | dict[str, Axes]]
+        The figure and axes objects.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the provided image file does not exist.
+    """
+    if image is not None:
+        image_path: Path = Path(image)
+        if not image_path.exists():
+            raise FileNotFoundError(
+                f"The image you provided ({image_path!s}) could not be found!",
+            )
+        img_arr: np.ndarray = np.array(Image.open(image_path))
+        fig: Figure = plt.figure(figsize=(9, 5), layout="constrained")
+        axs = fig.subplot_mosaic(
+            [["left", "top_right"], ["left", "."]],
+            width_ratios=[2, 1],
+        )
+        # Plot the image
+        axs["top_right"].grid(False)
+        axs["top_right"].axis("off")
+        axs["top_right"].imshow(img_arr)
+        return fig, axs
+
+    fig, ax = plt.subplots(figsize=(7, 5), layout="constrained")
+    return fig, ax
+
+
+def _plot_dim_with_ema(
+    ax: Axes,
+    x: np.ndarray,
+    dim: np.ndarray,
+    label: str,
+    color_style: str,
+    win: int,
+) -> None:
+    """Plot a canonical dimension and its EMA if requested."""
+    ax.plot(
+        x,
+        dim,
+        color_style,
+        alpha=1.0 if win <= 0 else 0.15,
+        label=label if win <= 0 else None,
+    )
+    if win > 0:
+        new_x: Float[np.ndarray, nV]
+        new_dim: Float[np.ndarray, nV]
+        new_x, new_dim = _ema(np.array(x), dim, win=win)
+        ax.plot(
+            new_x,
+            new_dim,
+            color_style,
+            alpha=1.0,
+            label=label,
+        )
+
+
 def plot_canonical_dimensions_scan(
-    x: list[float] | Float[np.ndarray, "n"],
+    x: list[float] | Float[np.ndarray, n],
     name: str,
     win: int = 0,
-    dimu2: Float[np.ndarray, "n"] | None = None,
-    dimu4: Float[np.ndarray, "n"] | None = None,
-    dimu6: Float[np.ndarray, "n"] | None = None,
+    dimu2: Float[np.ndarray, n] | None = None,
+    dimu4: Float[np.ndarray, n] | None = None,
+    dimu6: Float[np.ndarray, n] | None = None,
     suffix: str | None = None,
     image: str | Path | None = None,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot the canonical dimensions as a function of a particular quantity of interest.
+    """Plot the canonical dimensions as a function of a particular quantity of interest.
 
     Parameters
     ----------
@@ -727,97 +792,33 @@ def plot_canonical_dimensions_scan(
         The path to the image used for the computations.
     output_dir : str | Path
         The output directory. By default `"plots"`.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the provided image could not be found.
     """
     out_dir: Path = Path(output_dir)
     if not out_dir.exists():
         out_dir.mkdir(parents=True, exist_ok=True)
 
-    if image is not None:
-        image_path: Path = Path(image)
-        if not image_path.exists():
-            raise FileNotFoundError(
-                f"The image you provided ({str(image_path)}) could not be found!"
-            )
-        img_arr: np.ndarray = np.array(Image.open(image_path))
-        fig: Figure = plt.figure(figsize=(9, 5), layout="constrained")
-        axs = fig.subplot_mosaic(
-            [["left", "top_right"], ["left", "."]],
-            width_ratios=[2, 1],
-        )
-        ax: Axes = axs["left"]  # compatibility with no image
-
-        # Plot the image
-        axs["top_right"].grid(False)
-        axs["top_right"].axis("off")
-        axs["top_right"].imshow(img_arr)
-    else:
-        fig, ax = plt.subplots(figsize=(7, 5), layout="constrained")
+    fig: Figure
+    ax_setup: Axes | dict[str, Axes]
+    fig, ax_setup = _setup_figure(image)
+    ax: Axes = ax_setup["left"] if isinstance(ax_setup, dict) else ax_setup
 
     ax.axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
     ax.axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
 
+    x_arr = np.array(x)
     if dimu2 is not None:
-        ax.plot(
-            x,
-            dimu2,
-            "r-",
-            alpha=1.0 if win <= 0 else 0.15,
-            label=r"$\text{dim}(u_{2})$" if win <= 0 else None,
-        )
-        if win > 0:
-            new_x: Float[np.ndarray, "nV"]
-            new_dim: Float[np.ndarray, "nV"]
-            new_x, new_dim = _ema(np.array(x), dimu2, win=win)
-            ax.plot(
-                new_x,
-                new_dim,
-                "r-",
-                alpha=1.0,
-                label=r"$\text{dim}(u_{2})$",
-            )
+        _plot_dim_with_ema(ax, x_arr, dimu2, r"$\text{dim}(u_{2})$", "r-", win)
     if dimu4 is not None:
-        ax.plot(
-            x,
-            dimu4,
-            "g--",
-            alpha=1.0 if win <= 0 else 0.15,
-            label=r"$\text{dim}(u_{4})$" if win <= 0 else None,
-        )
-        if win > 0:
-            new_x, new_dim = _ema(np.array(x), dimu4, win=win)
-            ax.plot(
-                new_x,
-                new_dim,
-                "g--",
-                alpha=1.0,
-                label=r"$\text{dim}(u_{4})$",
-            )
+        _plot_dim_with_ema(ax, x_arr, dimu4, r"$\text{dim}(u_{4})$", "g--", win)
     if dimu6 is not None:
-        ax.plot(
-            x,
-            dimu6,
-            "b-.",
-            alpha=1.0 if win <= 0 else 0.15,
-            label=r"$\text{dim}(u_{6})$" if win <= 0 else None,
-        )
-        if win > 0:
-            new_x, new_dim = _ema(np.array(x), dimu6, win=win)
-            ax.plot(
-                new_x,
-                new_dim,
-                "b-.",
-                alpha=1.0,
-                label=r"$\text{dim}(u_{6})$",
-            )
+        _plot_dim_with_ema(ax, x_arr, dimu6, r"$\text{dim}(u_{6})$", "b-.", win)
 
     ax.set(xlabel=name, ylabel="canonical dimensions")
     ax.ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax.legend(
         loc="upper center",
@@ -833,17 +834,16 @@ def plot_canonical_dimensions_scan(
 
 
 def plot_canonical_dimensions_scan2d(
-    snr: Float[np.ndarray, "n"],
-    lam: Float[np.ndarray, "n"],
-    dimu2: Float[np.ndarray, "n"],
-    dimu4: Float[np.ndarray, "n"],
-    dimu6: Float[np.ndarray, "n"],
+    snr: Float[np.ndarray, n],
+    lam: Float[np.ndarray, n],
+    dimu2: Float[np.ndarray, n],
+    dimu4: Float[np.ndarray, n],
+    dimu6: Float[np.ndarray, n],
     suffix: str | None = None,
     image: str | None = None,
     output_dir: str | Path = "plots",
 ):
-    """
-    Plot the canonical dimensions as a surface plot of the signal-to-noise ratio and the Poisson parameter.
+    """Plot the canonical dimensions as a surface plot of the signal-to-noise ratio and the Poisson parameter.
 
     Parameters
     ----------
@@ -851,8 +851,6 @@ def plot_canonical_dimensions_scan2d(
         The signal-to-noise ratio (shape: :math:`n`).
     lam : array of floats
         The Poisson parameter (shape: :math:`n`).
-    win : int
-        The smoothing window width. By default `0`.
     dimu2 : array of floats, optional
         The list of values of the canonical dimension of the quadratic coupling (shape: :math:`n`).
     dimu4 : array of floats, optional
@@ -879,7 +877,7 @@ def plot_canonical_dimensions_scan2d(
         image_path: Path = Path(image)
         if not image_path.exists():
             raise FileNotFoundError(
-                f"The image you provided ({str(image_path)}) could not be found!"
+                f"The image you provided ({image_path!s}) could not be found!",
             )
         img_arr: np.ndarray = np.array(Image.open(image_path))
         fig: Figure = plt.figure(figsize=(24, 5), layout="constrained")
@@ -901,7 +899,10 @@ def plot_canonical_dimensions_scan2d(
         ax["right"].sharey(ax["left"])
     else:
         fig, axes = plt.subplots(
-            figsize=(21, 5), ncols=3, sharey=True, layout="constrained"
+            figsize=(21, 5),
+            ncols=3,
+            sharey=True,
+            layout="constrained",
         )
         ax: dict[str, Axes] = {
             "left": axes[0],
@@ -917,9 +918,9 @@ def plot_canonical_dimensions_scan2d(
     ax["right"].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
 
     # Handle nans
-    dimu2: Float[np.ndarray, "n"] = np.nan_to_num(dimu2)
-    dimu4: Float[np.ndarray, "n"] = np.nan_to_num(dimu4)
-    dimu6: Float[np.ndarray, "n"] = np.nan_to_num(dimu6)
+    dimu2: Float[np.ndarray, n] = np.nan_to_num(dimu2)
+    dimu4: Float[np.ndarray, n] = np.nan_to_num(dimu4)
+    dimu6: Float[np.ndarray, n] = np.nan_to_num(dimu6)
 
     # Shared color scale for direct comparison
     all_dims: np.ndarray = np.concatenate((dimu2, dimu4, dimu6))
@@ -932,13 +933,28 @@ def plot_canonical_dimensions_scan2d(
 
     # Surface plot
     ax["left"].tricontourf(
-        snr, lam, dimu2, levels=levels, cmap="turbo", norm=norm
+        snr,
+        lam,
+        dimu2,
+        levels=levels,
+        cmap="turbo",
+        norm=norm,
     )
     ax["center"].tricontourf(
-        snr, lam, dimu4, levels=levels, cmap="turbo", norm=norm
+        snr,
+        lam,
+        dimu4,
+        levels=levels,
+        cmap="turbo",
+        norm=norm,
     )
     cntr_right = ax["right"].tricontourf(
-        snr, lam, dimu6, levels=levels, cmap="turbo", norm=norm
+        snr,
+        lam,
+        dimu6,
+        levels=levels,
+        cmap="turbo",
+        norm=norm,
     )
     fig.colorbar(
         cntr_right,
@@ -952,25 +968,34 @@ def plot_canonical_dimensions_scan2d(
 
     # Set the labels
     ax["left"].set(
-        xlabel="signal-to-noise ratio ($\\beta$)",
-        ylabel="Poisson expectation ($\\lambda$)",
+        xlabel="signal-to-noise ratio ($\beta$)",
+        ylabel=r"Poisson expectation ($\lambda$)",
     )
     ax["left"].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax["center"].set(
-        xlabel="signal-to-noise ratio ($\\beta$)",
+        xlabel="signal-to-noise ratio ($\beta$)",
         ylabel="",
     )
     ax["center"].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax["right"].set(
-        xlabel="signal-to-noise ratio ($\\beta$)",
+        xlabel="signal-to-noise ratio ($\beta$)",
         ylabel="",
     )
     ax["right"].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     if suffix is None:
@@ -984,8 +1009,7 @@ def plot_ratio_scan(
     suffix: str | None = None,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot the canonical dimensions as a function of a particular quantity of interest.
+    """Plot the canonical dimensions as a function of a particular quantity of interest.
 
     Parameters
     ----------
@@ -1008,47 +1032,50 @@ def plot_ratio_scan(
 
     ax.fill_between(
         groups.index,
-        groups[("dimu2", "mean")] - groups[("dimu2", "std")],
-        groups[("dimu2", "mean")] + groups[("dimu2", "std")],
+        groups["dimu2", "mean"] - groups["dimu2", "std"],
+        groups["dimu2", "mean"] + groups["dimu2", "std"],
         color="r",
         alpha=0.15,
     )
     ax.plot(
         groups.index,
-        groups[("dimu2", "mean")],
+        groups["dimu2", "mean"],
         "r-",
         label=r"$\text{dim}(u_{2})$",
     )
     ax.fill_between(
         groups.index,
-        groups[("dimu4", "mean")] - groups[("dimu4", "std")],
-        groups[("dimu4", "mean")] + groups[("dimu4", "std")],
+        groups["dimu4", "mean"] - groups["dimu4", "std"],
+        groups["dimu4", "mean"] + groups["dimu4", "std"],
         color="g",
         alpha=0.15,
     )
     ax.plot(
         groups.index,
-        groups[("dimu4", "mean")],
+        groups["dimu4", "mean"],
         "g--",
         label=r"$\text{dim}(u_{4})$",
     )
     ax.fill_between(
         groups.index,
-        groups[("dimu6", "mean")] - groups[("dimu6", "std")],
-        groups[("dimu6", "mean")] + groups[("dimu6", "std")],
+        groups["dimu6", "mean"] - groups["dimu6", "std"],
+        groups["dimu6", "mean"] + groups["dimu6", "std"],
         color="b",
         alpha=0.15,
     )
     ax.plot(
         groups.index,
-        groups[("dimu6", "mean")],
+        groups["dimu6", "mean"],
         "b-.",
         label=r"$\text{dim}(u_{6})$",
     )
 
     ax.set(xlabel="ratio ($q = p / n$)", ylabel="canonical dimensions")
     ax.ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax.legend(
         loc="upper center",
@@ -1068,8 +1095,7 @@ def plot_localization(
     suffix: str | None = None,
     output_dir: str | Path = "plots",
 ) -> tuple[float, float, float, float, float]:
-    """
-    Plot the localization of the components of the eigenvectors in the UV and IR.
+    """Plot the localization of the components of the eigenvectors in the UV and IR.
 
     Parameters
     ----------
@@ -1102,8 +1128,8 @@ def plot_localization(
     n_right: int = len(data["evl"]) - idx
     n_left: int = 100 - n_right
 
-    evc_uv: Float[np.ndarray, "100, p"] = np.array(data["evc"]).T[:100].ravel()
-    evc_ir: Float[np.ndarray, "100, p"] = (
+    evc_uv: Float[np.ndarray, 100, p] = np.array(data["evc"]).T[:100].ravel()
+    evc_ir: Float[np.ndarray, 100, p] = (
         np.array(data["evc"]).T[idx - n_left : idx + n_right].ravel()
     )
 
@@ -1156,7 +1182,11 @@ def plot_localization(
         axs["ratio"].set_ylabel("IR / UV")
 
     axs["joint"].hist2d(
-        evc_ir, evc_uv, bins=uv_edges, density=True, cmap="turbo"
+        evc_ir,
+        evc_uv,
+        bins=uv_edges,
+        density=True,
+        cmap="turbo",
     )
     axs["joint"].yaxis.tick_right()
     axs["joint"].yaxis.set_label_position("right")
@@ -1186,12 +1216,11 @@ def plot_eigenvalues(
     zoom: bool = False,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot the eigenvalues of the distribution.
+    """Plot the eigenvalues of the distribution.
 
     Parameters
     ----------
-    data : dist[str, Any]
+    data : dict[str, Any]
         The eigenvalues and eigenvectors.
     suffix : str
         The name to postpone to the file name.
@@ -1208,7 +1237,7 @@ def plot_eigenvalues(
     ax: Axes
     fig, ax = plt.subplots(figsize=(7, 5), layout="constrained")
 
-    evls: Float[np.ndarray, "p"] = np.array(data["evl"])
+    evls: Float[np.ndarray, p] = np.array(data["evl"])
     ax.hist(
         evls,
         bins=2 * int(np.sqrt(len(evls))),
@@ -1219,8 +1248,8 @@ def plot_eigenvalues(
 
     ax.axhline(0.0, ls="dashed", color="k", alpha=0.15)
     ax.axvline(0.0, ls="dashed", color="k", alpha=0.15)
-    ax.set_xlabel("$\\lambda$")
-    ax.set_ylabel("$\\mu$")
+    ax.set_xlabel(r"$\lambda$")
+    ax.set_ylabel(r"$\mu$")
 
     if zoom:
         max_evls: float = float(max(evls))
@@ -1247,15 +1276,14 @@ def plot_eigenvalues(
 
 
 def plot_localization_scan(
-    snrs: list[float] | Float[np.ndarray, "n"],
-    ratios: list[float] | Float[np.ndarray, "n"],
-    uv_stds: list[float] | Float[np.ndarray, "n"],
-    ir_means: list[float] | Float[np.ndarray, "n"],
-    ir_stds: list[float] | Float[np.ndarray, "n"],
+    snrs: list[float] | Float[np.ndarray, n],
+    ratios: list[float] | Float[np.ndarray, n],
+    uv_stds: list[float] | Float[np.ndarray, n],
+    ir_means: list[float] | Float[np.ndarray, n],
+    ir_stds: list[float] | Float[np.ndarray, n],
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot values of the localization of the eigenvector components as a functions of the signal-to-noise ratio.
+    """Plot values of the localization of the eigenvector components as a functions of the signal-to-noise ratio.
 
     Parameters
     ----------
@@ -1279,40 +1307,55 @@ def plot_localization_scan(
     fig: Figure
     ax: np.ndarray
     fig, ax = plt.subplots(
-        ncols=2, nrows=2, figsize=(7 * 2, 5 * 2), layout="constrained"
+        ncols=2,
+        nrows=2,
+        figsize=(7 * 2, 5 * 2),
+        layout="constrained",
     )
     ax = ax.ravel()
 
     ax[0].plot(snrs, ratios, "kx")
     ax[0].plot(snrs, ratios, "k--", alpha=0.5)
-    ax[0].set(xlabel="signal-to-noise ratio ($\\beta$)", ylabel="ratio")
+    ax[0].set(xlabel="signal-to-noise ratio ($\beta$)", ylabel="ratio")
     ax[0].ticklabel_format(
-        axis="y", style="sci", scilimits=(0, 0), useMathText=True
+        axis="y",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax[0].axhline(1.0, ls="dashed", color="k", alpha=0.15)
     ax[1].plot(snrs, ir_means, "rx")
     ax[1].plot(snrs, ir_means, "r--", alpha=0.5)
-    ax[1].set(xlabel="signal-to-noise ratio ($\\beta$)", ylabel="IR (average)")
+    ax[1].set(xlabel="signal-to-noise ratio ($\beta$)", ylabel="IR (average)")
     ax[1].ticklabel_format(
-        axis="y", style="sci", scilimits=(0, 0), useMathText=True
+        axis="y",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax[2].plot(snrs, ir_stds, "rx")
     ax[2].plot(snrs, ir_stds, "r--", alpha=0.5)
     ax[2].set(
-        xlabel="signal-to-noise ratio ($\\beta$)",
+        xlabel="signal-to-noise ratio ($\beta$)",
         ylabel="IR (standard deviation)",
     )
     ax[2].ticklabel_format(
-        axis="y", style="sci", scilimits=(0, 0), useMathText=True
+        axis="y",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax[3].plot(snrs, np.array(ir_stds) / np.array(uv_stds), "kx")
     ax[3].plot(snrs, np.array(ir_stds) / np.array(uv_stds), "k--", alpha=0.5)
     ax[3].set(
-        xlabel="signal-to-noise ratio ($\\beta$)",
+        xlabel="signal-to-noise ratio ($\beta$)",
         ylabel="IR / UV (standard deviation)",
     )
     ax[3].ticklabel_format(
-        axis="y", style="sci", scilimits=(0, 0), useMathText=True
+        axis="y",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     ax[3].axhline(1.0, ls="dashed", color="k", alpha=0.15)
 
@@ -1324,8 +1367,7 @@ def plot_trajectories(
     suffix: str | None = None,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot the FRG trajectories.
+    """Plot the FRG trajectories.
 
     Parameters
     ----------
@@ -1355,7 +1397,10 @@ def plot_trajectories(
     axs["evo"].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
     axs["evo"].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
     axs["evo"].ticklabel_format(
-        axis="y", style="sci", scilimits=(0, 0), useMathText=True
+        axis="y",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     axs["evo"].legend(loc="best", ncol=1, frameon=False)
 
@@ -1369,7 +1414,10 @@ def plot_trajectories(
     ax_inset.yaxis.get_offset_text().set_fontsize(12)
     ax_inset.xaxis.get_offset_text().set_fontsize(12)
     ax_inset.ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     ax_inset = axs["evo"].inset_axes([0.3, 0.45, 0.5, 0.2])
@@ -1381,7 +1429,10 @@ def plot_trajectories(
     ax_inset.yaxis.get_offset_text().set_fontsize(12)
     ax_inset.xaxis.get_offset_text().set_fontsize(12)
     ax_inset.ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     ax_inset = axs["evo"].inset_axes([0.4, 0.15, 0.5, 0.2])
@@ -1393,7 +1444,10 @@ def plot_trajectories(
     ax_inset.yaxis.get_offset_text().set_fontsize(12)
     ax_inset.xaxis.get_offset_text().set_fontsize(12)
     ax_inset.ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     # Show trakectories
@@ -1404,7 +1458,10 @@ def plot_trajectories(
     axs["u2u4"].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
     axs["u2u4"].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
     axs["u2u4"].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     axs["u4u6"].plot(data["u4"], data["u6"], "k-")
@@ -1414,10 +1471,16 @@ def plot_trajectories(
     axs["u4u6"].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
     axs["u4u6"].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
     axs["u4u6"].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
     axs["u4u6"].legend(
-        loc="center left", bbox_to_anchor=(1.0, 0.5), ncols=1, frameon=False
+        loc="center left",
+        bbox_to_anchor=(1.0, 0.5),
+        ncols=1,
+        frameon=False,
     )
 
     axs["u2u6"].plot(data["u2"], data["u6"], "k-")
@@ -1427,7 +1490,10 @@ def plot_trajectories(
     axs["u2u6"].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
     axs["u2u6"].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
     axs["u2u6"].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     if suffix is None:
@@ -1437,16 +1503,15 @@ def plot_trajectories(
 
 
 def plot_symmetry_surface(
-    phases_ir: list[int] | Integer[np.ndarray, "n"],
-    u2: Float[np.ndarray, "n"],
-    u4: Float[np.ndarray, "n"],
-    u6: Float[np.ndarray, "n"],
-    phases_uv: list[int] | Integer[np.ndarray, "n"] | None = None,
+    phases_ir: list[int] | Integer[np.ndarray, n],
+    u2: Float[np.ndarray, n],
+    u4: Float[np.ndarray, n],
+    u6: Float[np.ndarray, n],
+    phases_uv: list[int] | Integer[np.ndarray, n] | None = None,
     suffix: str | None = None,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot the symmetry surface of the FRG equations.
+    """Plot the symmetry surface of the FRG equations.
 
     Parameters
     ----------
@@ -1490,7 +1555,10 @@ def plot_symmetry_surface(
     ax[0].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
     ax[0].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
     ax[0].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     ax[1].scatter(u4, u6, c=col)
@@ -1498,7 +1566,10 @@ def plot_symmetry_surface(
     ax[1].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
     ax[1].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
     ax[1].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     handles = [
@@ -1532,7 +1603,10 @@ def plot_symmetry_surface(
     ax[2].axhline(0.0, color="k", alpha=0.15, linestyle="dashed")
     ax[2].axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
     ax[2].ticklabel_format(
-        axis="both", style="sci", scilimits=(0, 0), useMathText=True
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     if suffix is None:
@@ -1546,8 +1620,7 @@ def plot_symmetry_size(
     suffix: str | None = None,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot the relative size of the symmetric phase.
+    """Plot the relative size of the symmetric phase.
 
     Parameters
     ----------
@@ -1570,9 +1643,9 @@ def plot_symmetry_size(
     val: np.ndarray = 100 * np.array(list(sizes.values()))
     ax.plot(snr, val, "kx")
     ax.plot(snr, val, "k--", alpha=0.15)
-    ax.set(xlabel="signal-to-noise ratio ($\\beta$)", ylabel="relative size")
+    ax.set(xlabel="signal-to-noise ratio ($\beta$)", ylabel="relative size")
     ax.get_yaxis().set_major_formatter(
-        mpl.ticker.PercentFormatter(decimals=1, is_latex=True)
+        mpl.ticker.PercentFormatter(decimals=1, is_latex=True),
     )
 
     if suffix is None:
@@ -1582,15 +1655,14 @@ def plot_symmetry_size(
 
 
 def plot_potential(
-    x: Float[np.ndarray, "n"],
+    x: Float[np.ndarray, n],
     u2: dict[float, list[float]],
     u4: dict[float, list[float]],
     n: int,
     suffix: str | None = None,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Plot the relative size of the symmetric phase.
+    """Plot the potential.
 
     Parameters
     ----------
@@ -1618,7 +1690,10 @@ def plot_potential(
     ax[0].axhline(0.0, color="k", ls="dashed", alpha=0.15)
     ax[0].axvline(0.0, color="k", ls="dashed", alpha=0.15)
     ax[0].ticklabel_format(
-        axis="y", style="sci", scilimits=(0, 0), useMathText=True
+        axis="y",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
     )
 
     # Define the potential
@@ -1628,8 +1703,8 @@ def plot_potential(
         u4_vals: dict[float, list[float]],
         snr_val: float,
         idx_val: int = 0,
-    ) -> Float[np.ndarray, "n"]:
-        y_vals: Float[np.ndarray, "n"] = (
+    ) -> Float[np.ndarray, n]:
+        y_vals: Float[np.ndarray, n] = (
             u2_vals[snr_val][idx_val] * x_vals**2
             + u4_vals[snr_val][idx_val] * x_vals**4
         )
@@ -1650,12 +1725,17 @@ def plot_potential(
         "solid",
     ]
     y_max: float = -np.inf
-    y_collection: Float[np.ndarray, "SNR, n"] = np.zeros(
-        (len(u2.keys()), len(x))
-    )
+    y_collection: Float[np.ndarray, SNR, n] = np.zeros((
+        len(u2.keys()),
+        len(x),
+    ))
     for m, snr in enumerate(u2.keys()):
         y: np.ndarray = _potential(
-            x, u2_vals=u2, u4_vals=u4, snr_val=snr, idx_val=n
+            x,
+            u2_vals=u2,
+            u4_vals=u4,
+            snr_val=snr,
+            idx_val=n,
         )
         y_collection[m] = y
         y_max = float(np.maximum(y_max, y[np.argmin(np.abs(x))]))
@@ -1677,20 +1757,24 @@ def plot_potential(
         aspect=50 * (7 / 5),
         cmap="viridis",
     )
-    ax[1].set(xlabel="$M$", ylabel="signal-to-noise ratio ($\\beta$)")
+    ax[1].set(xlabel="$M$", ylabel="signal-to-noise ratio ($\beta$)")
     ax[1].set_yticks(range(len(u2.keys())))
-    ax[1].set_yticklabels([f"{val:.2f}" for val in u2.keys()])
+    ax[1].set_yticklabels([f"{val:.2f}" for val in u2])
     l_idx: int = int(np.argmin(np.abs(x + 1.0)))
     r_idx: int = int(np.argmin(np.abs(x - 1.0)))
     ax[1].set_xticks([l_idx, 500, r_idx])
     ax[1].set_xticklabels([f"{val:.2f}" for val in x[ax[1].get_xticks()]])
     formatter: mpl.ticker.ScalarFormatter = mpl.ticker.ScalarFormatter(
-        useMathText=True
+        useMathText=True,
     )
     formatter.set_scientific(True)
     formatter.set_powerlimits((0, 0))
     cbar: mpl.colorbar.Colorbar = fig.colorbar(
-        img, ax=ax[1], shrink=0.9, pad=-0.35, format=formatter
+        img,
+        ax=ax[1],
+        shrink=0.9,
+        pad=-0.35,
+        format=formatter,
     )
     cbar.set_label("$U$", labelpad=10)
 
@@ -1706,8 +1790,7 @@ def direct_relative_adherence(
     suffix: str | None = None,
     output_dir: str | Path = "plots",
 ) -> None:
-    """
-    Compute the direct relative adherence.
+    """Compute the direct relative adherence.
 
     Parameters
     ----------
@@ -1715,7 +1798,7 @@ def direct_relative_adherence(
         The results of the computation of the canonical dimensions.
     thresh : float
         The value of the threshold on the distribution to be considered "bulk". By default `0.5`.
-    suffix : str
+    suffix : str, optional
         The name to postpone to the file name.
     output_dir : str | Path
         The output directory. By default `"plots"`.
@@ -1725,24 +1808,24 @@ def direct_relative_adherence(
         out_dir.mkdir(parents=True, exist_ok=True)
 
     # Compute the point between the max and the start
-    k2: Float[np.ndarray, "n"] = np.array(data["k2"])
+    k2: Float[np.ndarray, n] = np.array(data["k2"])
     idx: int
     idx, _, _ = compute_roi(data=data, thresh=thresh)
     dimu4_interp: Callable
     _, dimu4_interp, _ = interp_canonical_dimensions(data, idx)
-    dimu4_emp: Float[np.ndarray, "n"] = dimu4_interp(k2)
+    dimu4_emp: Float[np.ndarray, n] = dimu4_interp(k2)
 
     # Compute the proxy
-    ratios: Float[np.ndarray, "10"] = np.linspace(0.10, 0.99, num=10)
+    ratios: Float[np.ndarray, 10] = np.linspace(0.10, 0.99, num=10)
     proxy: MarchenkoPastur = MarchenkoPastur(ratio=0.9, var=1.0)
     best_distance: float = np.inf
-    best_dimu4: Float[np.ndarray, "n"] = np.zeros_like(k2)
+    best_dimu4: Float[np.ndarray, n] = np.zeros_like(k2)
     for ratio in ratios:
         sigma: float = float(np.sqrt(1 / (4.0 * np.sqrt(ratio)) / data["m2"]))
         mp: MarchenkoPastur = MarchenkoPastur(ratio=ratio, var=sigma)
 
         # Canonical dimensions
-        dimu4: Float[np.ndarray, "n"]
+        dimu4: Float[np.ndarray, n]
         _, dimu4, _, _ = mp.canonical_dimensions(k2).T
         distance: float = float(np.abs(dimu4 - dimu4_emp).max())
         if distance < best_distance:
@@ -1751,7 +1834,7 @@ def direct_relative_adherence(
             proxy = deepcopy(mp)
 
     # Compute the adherence
-    adherence: Float[np.ndarray, "n"] = np.zeros_like(k2)
+    adherence: Float[np.ndarray, n] = np.zeros_like(k2)
     for n in range(1, len(k2)):
         adherence[n] = float((best_dimu4[:n] - dimu4_emp[:n]).min())
 
@@ -1764,7 +1847,7 @@ def direct_relative_adherence(
     ax.axvline(0.0, color="k", alpha=0.15, linestyle="dashed")
 
     ax.plot(k2[1:], adherence[1:], "r-", label="local inverse adherence")
-    ax.set(xlabel="$k^2$", ylabel="$\\zeta^{-1}_{k^2}$")
+    ax.set(xlabel="$k^2$", ylabel=r"$\zeta^{-1}_{k^2}$")
 
     ax_twin: Axes = ax.twinx()
 
@@ -1782,7 +1865,7 @@ def direct_relative_adherence(
     )
 
     ax_twin.plot(k2, np.array(data["dist"]), "k-")
-    full_k2: Float[np.ndarray, "1000"] = np.linspace(0.0, k2[-1], num=1000)
+    full_k2: Float[np.ndarray, 1000] = np.linspace(0.0, k2[-1], num=1000)
     ax_twin.plot(full_k2, proxy.ipdf(full_k2), "k--", alpha=0.75)
     ax_twin.set_ylabel("PDF")
 
@@ -1796,7 +1879,7 @@ def direct_relative_adherence(
     ax.legend(
         handles=custom_lines,
         labels=[
-            "$\\zeta^{-1}_{k^2}$",
+            r"$\zeta^{-1}_{k^2}$",
             "proxy",
             "data",
         ],

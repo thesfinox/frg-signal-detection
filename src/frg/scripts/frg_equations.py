@@ -1,22 +1,5 @@
 #! /usr/bin/env python3
-"""
-FRG Equations
--------------
-
-Functional Renormalization Group equations (LPA)
-
-Compute the running of the couplings in a theory with given momenta distribution. Use a simple potential expansion.
-
-Authors
--------
-
-- Riccardo Finotello <riccardo.finotello@cea.fr>
-
-Maintainers
------------
-
-- Riccardo Finotello
-"""
+"""Compute the running of the couplings in a theory with given momenta distribution. Use a simple potential expansion."""
 
 from __future__ import annotations
 
@@ -57,14 +40,19 @@ __epilog__: str = (
 
 def main(argv: list[str] | None = None) -> int | str:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
-        description=__description__, epilog=__epilog__
+        description=__description__,
+        epilog=__epilog__,
     )
     parser.add_argument("--config", required=False, help="Configuration file")
     parser.add_argument(
-        "--analytic", action="store_true", help="Run an analytic simulation"
+        "--analytic",
+        action="store_true",
+        help="Run an analytic simulation",
     )
     parser.add_argument(
-        "--print_config", action="store_true", help="Print configuration"
+        "--print_config",
+        action="store_true",
+        help="Print configuration",
     )
     parser.add_argument(
         "--args",
@@ -73,7 +61,11 @@ def main(argv: list[str] | None = None) -> int | str:
         help="Additional configuration arguments (see YACS documentation)",
     )
     parser.add_argument(
-        "-v", dest="verb", action="count", default=0, help="Verbosity level"
+        "-v",
+        dest="verb",
+        action="count",
+        default=0,
+        help="Verbosity level",
     )
     a: argparse.Namespace = parser.parse_args(argv)
 
@@ -95,7 +87,7 @@ def main(argv: list[str] | None = None) -> int | str:
         else:
             logger.error("Configuration file %s does not exist!", cfg_file)
             raise FileNotFoundError(
-                "Configuration file %s does not exist!" % cfg_file
+                "Configuration file %s does not exist!" % cfg_file,
             )
     cfg.merge_from_list(a.args)
     cfg.freeze()
@@ -110,23 +102,24 @@ def main(argv: list[str] | None = None) -> int | str:
     # Distribution parameters
     x_uv: float = cfg.POT.UV_SCALE
     x_ir: float = float(
-        1 / np.sqrt(cfg.DIST.NUM_SAMPLES)
+        1 / np.sqrt(cfg.DIST.NUM_SAMPLES),
     )  # stop at physical scale
 
     # Define the distribution
     if a.analytic:
         x_ir: float = 0.0  # analytic can go to zero
         dist: MarchenkoPastur = MarchenkoPastur(
-            ratio=cfg.DIST.RATIO, var=cfg.DIST.VAR
+            ratio=cfg.DIST.RATIO,
+            var=cfg.DIST.VAR,
         )
     else:
         dist: EmpiricalDistribution = load_data(cfg)
 
     # Compute the running
-    k2: Float[np.ndarray, "S"]
-    u2: Float[np.ndarray, "S"]
-    u4: Float[np.ndarray, "S"]
-    u6: Float[np.ndarray, "S"]
+    k2: Float[np.ndarray, S]
+    u2: Float[np.ndarray, S]
+    u4: Float[np.ndarray, S]
+    u6: Float[np.ndarray, S]
     k2, u2, u4, u6 = dist.frg_equations(
         x_uv,
         u2_init=cfg.POT.U2_INIT,
@@ -153,14 +146,14 @@ def main(argv: list[str] | None = None) -> int | str:
     m2_mp: float | None = getattr(dist, "m2_mp", None)
     if m2_mp is not None:
         payload["m2_mp"] = m2_mp
-    with open(output_file, "w") as f:
+    with Path(output_file).open("w") as f:
         json.dump(payload, f)
     logger.info("Data saved in %s" % output_file)
 
     return 0
 
 
-def cli():
+def cli():  # noqa
     raise SystemExit(main())
 
 

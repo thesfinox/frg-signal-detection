@@ -1,8 +1,9 @@
-"""
-Test configuration
+"""Test configuration.
 
 Test the configuration initialisation
 """
+
+import pathlib
 
 import pytest
 
@@ -11,7 +12,7 @@ from frg.utils.utils import get_cfg_defaults, load_data
 
 
 def test_cfg_defaults():
-    """Test the default configuration"""
+    """Test the default configuration."""
     cfg = get_cfg_defaults()
 
     assert hasattr(cfg, "DIST")
@@ -48,7 +49,6 @@ def test_load_data():
     assert isinstance(dist, EmpiricalDistribution)
 
     import numpy as np
-    import os
 
     np.random.seed(42)
     X_dummy = np.random.randn(100, 50)
@@ -67,7 +67,7 @@ def test_load_data():
     with pytest.raises(ValueError):
         load_data(cfg)
 
-    os.remove("tests/data/dummy.npy")
+    pathlib.Path("tests/data/dummy.npy").unlink()
 
     cfg["SIG"]["INPUT"] = "spam.npy"
     with pytest.raises(FileNotFoundError):

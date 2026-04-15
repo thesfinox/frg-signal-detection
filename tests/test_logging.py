@@ -1,5 +1,4 @@
-"""
-Test logging
+"""Test logging.
 
 Test the logging features.
 """

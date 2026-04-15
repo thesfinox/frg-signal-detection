@@ -1,21 +1,5 @@
 #! /usr/bin/env python3
-"""
-Canonical Dimensions
---------------------
-
-Compute the canonical dimensions of the couplings in a theory with given momenta distribution.
-
-Authors
--------
-
-- Riccardo Finotello <riccardo.finotello@cea.fr>
-- Parham Radpay <parhamradpay@gmail.com>
-
-Maintainer
-----------
-
-- Riccardo Finotello
-"""
+"""Compute the canonical dimensions of the couplings in a theory with given momenta distribution."""
 
 from __future__ import annotations
 
@@ -49,16 +33,28 @@ __epilog__: str = (
 )
 
 
-def main(argv: list[str] | None = None) -> int | str:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse the command-line arguments.
+
+    Returns
+    -------
+    argparse.Namespace
+        The parsed arguments.
+    """
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
-        description=__description__, epilog=__epilog__
+        description=__description__,
+        epilog=__epilog__,
     )
     parser.add_argument("--config", required=False, help="Configuration file")
     parser.add_argument(
-        "--analytic", action="store_true", help="Run an analytic simulation"
+        "--analytic",
+        action="store_true",
+        help="Run an analytic simulation",
     )
     parser.add_argument(
-        "--print_config", action="store_true", help="Print configuration"
+        "--print_config",
+        action="store_true",
+        help="Print configuration",
     )
     parser.add_argument(
         "--suffix",
@@ -73,20 +69,30 @@ def main(argv: list[str] | None = None) -> int | str:
         help="Additional configuration arguments (see YACS documentation)",
     )
     parser.add_argument(
-        "-v", dest="verb", action="count", default=0, help="Verbosity level"
+        "-v",
+        dest="verb",
+        action="count",
+        default=0,
+        help="Verbosity level",
     )
-    a: argparse.Namespace = parser.parse_args(argv)
+    return parser.parse_args(argv)
 
-    # Get the logger
-    logger_level: int = 10 * (4 - a.verb)
-    logger: Logger = get_logger(__name__, level=logger_level)
-    logger.info("Starting...")
+
+def _load_config(a: argparse.Namespace, logger: Logger) -> CfgNode:
+    """Load the configuration file.
+
+    Returns
+    -------
+    CfgNode
+        The configuration node.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the configuration file does not exist.
+    """
     cfg: CfgNode = get_cfg_defaults()
-
-    # Open the configuration file
-    if a.config is None:
-        logger.debug("No configuration file specified")
-    else:
+    if a.config is not None:
         logger.debug("Configuration file: %s" % a.config)
         cfg_file = Path(os.path.expandvars(a.config)).absolute()
         if cfg_file.exists():
@@ -95,57 +101,59 @@ def main(argv: list[str] | None = None) -> int | str:
         else:
             logger.error("Configuration file %s does not exist!", cfg_file)
             raise FileNotFoundError(
-                "Configuration file %s does not exist!" % cfg_file
+                "Configuration file %s does not exist!" % cfg_file,
             )
     cfg.merge_from_list(a.args)
     cfg.freeze()
+    return cfg
 
-    if a.print_config:
-        print(cfg.dump())
-        return 0
 
-    # Run the simulation
-    logger.info("Computing the canonical dimensions...")
+def _setup_distribution(
+    a: argparse.Namespace,
+    cfg: CfgNode,
+) -> EmpiricalDistribution | MarchenkoPastur:
+    """Define the distribution to be used.
 
-    # Distribution parameters
-    x_max: float = cfg.POT.UV_SCALE
-    n_vars: int = int(cfg.DIST.NUM_SAMPLES * cfg.DIST.RATIO)
-    x_min: float = 1.0 / np.sqrt(n_vars)  # the smallest bin
-
-    # Define the distribution
+    Returns
+    -------
+    EmpiricalDistribution | MarchenkoPastur
+        The distribution instance.
+    """
     if a.analytic:
-        x_min: float = 0.0  # analytic can go to zero
-        dist: MarchenkoPastur = MarchenkoPastur(
-            ratio=cfg.DIST.RATIO, var=cfg.DIST.VAR
-        )
-    else:
-        dist: EmpiricalDistribution = load_data(cfg)
+        return MarchenkoPastur(ratio=cfg.DIST.RATIO, var=cfg.DIST.VAR)
+    return load_data(cfg)
 
-    # Compute the canonical dimensions
-    x: Float[np.ndarray, "5000"] = np.linspace(x_min, x_max, num=5000)
-    dimu2: Float[np.ndarray, "5000"]
-    dimu4: Float[np.ndarray, "5000"]
-    dimu6: Float[np.ndarray, "5000"]
-    dimu2, dimu4, dimu6, _ = dist.canonical_dimensions(x).T
 
-    # Save data
+def _save_results(
+    cfg: CfgNode,
+    a: argparse.Namespace,
+    x: Float[np.ndarray, 5000],
+    dimu2: Float[np.ndarray, 5000],
+    dimu4: Float[np.ndarray, 5000],
+    dimu6: Float[np.ndarray, 5000],
+    dist: EmpiricalDistribution | MarchenkoPastur,
+    logger: Logger,
+) -> None:
+    """Save the results to a JSON file."""
     output_dir: Path = Path(os.path.expandvars(cfg.DATA.OUTPUT_DIR)).absolute()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     suffix: str = f"snr={cfg.SIG.SNR}"
     suffix_keys = set(a.suffix or [])
-    if "nsamples" in suffix_keys:
-        suffix += f"_nsamples={cfg.DIST.NUM_SAMPLES}"
-    if "ratio" in suffix_keys:
-        suffix += f"_ratio={cfg.DIST.RATIO}"
-    if "seed" in suffix_keys:
-        suffix += f"_seed={cfg.DIST.SEED}"
-    if "var" in suffix_keys:
-        suffix += f"_var={cfg.DIST.VAR}"
-    if "lam" in suffix_keys:
-        suffix += f"_lam={cfg.DIST.POIS_LAM}"
+    mapping = {
+        "nsamples": ("NUM_SAMPLES", "nsamples"),
+        "ratio": ("RATIO", "ratio"),
+        "seed": ("SEED", "seed"),
+        "var": ("VAR", "var"),
+        "lam": ("POIS_LAM", "lam"),
+    }
+    for key, (cfg_attr, label) in mapping.items():
+        if key in suffix_keys:
+            suffix += f"_{label}={getattr(cfg.DIST, cfg_attr)}"
+
     if a.analytic:
         suffix = f"analytic_var={cfg.DIST.VAR}_ratio={cfg.DIST.RATIO}_seed={cfg.DIST.SEED}"
+
     output_file: Path = output_dir / f"mp_canonical_dimensions_{suffix}.json"
     payload: dict[str, list[float] | float] = {
         "k2": x.tolist(),
@@ -158,14 +166,49 @@ def main(argv: list[str] | None = None) -> int | str:
     m2_mp: float | None = getattr(dist, "m2_mp", None)
     if m2_mp is not None:
         payload["m2_mp"]: float = float(m2_mp)
-    with open(output_file, "w") as f:
+    with Path(output_file).open("w") as f:
         json.dump(payload, f)
     logger.info("Results saved in %s" % output_file)
+
+
+def main(argv: list[str] | None = None) -> int | str:
+    a: argparse.Namespace = _parse_args(argv)
+
+    # Get the logger
+    logger_level: int = 10 * (4 - a.verb)
+    logger: Logger = get_logger(__name__, level=logger_level)
+    logger.info("Starting...")
+    cfg: CfgNode = _load_config(a, logger)
+
+    if a.print_config:
+        print(cfg.dump())
+        return 0
+
+    # Run the simulation
+    logger.info("Computing the canonical dimensions...")
+
+    # Define the distribution
+    dist: EmpiricalDistribution | MarchenkoPastur = _setup_distribution(a, cfg)
+
+    # Distribution parameters
+    x_max: float = cfg.POT.UV_SCALE
+    n_vars: int = int(cfg.DIST.NUM_SAMPLES * cfg.DIST.RATIO)
+    x_min: float = 0.0 if a.analytic else 1.0 / np.sqrt(n_vars)
+
+    # Compute the canonical dimensions
+    x: Float[np.ndarray, 5000] = np.linspace(x_min, x_max, num=5000)
+    dimu2: Float[np.ndarray, 5000]
+    dimu4: Float[np.ndarray, 5000]
+    dimu6: Float[np.ndarray, 5000]
+    dimu2, dimu4, dimu6, _ = dist.canonical_dimensions(x).T
+
+    # Save data
+    _save_results(cfg, a, x, dimu2, dimu4, dimu6, dist, logger)
 
     return 0
 
 
-def cli():
+def cli():  # noqa
     raise SystemExit(main())
 
 

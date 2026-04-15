@@ -1,20 +1,5 @@
 #! /usr/bin/env python3
-"""
-Configuration Files
--------------------
-
-Generate configurations files for the exploration of the phase space of the initial values of the couplings.
-
-Authors
--------
-
-- Riccardo Finotello <riccardo.finotello@cea.fr>
-
-Maintainers
------------
-
-- Riccardo Finotello
-"""
+"""Generate configurations files for the exploration of the phase space of the initial values of the couplings."""
 
 from __future__ import annotations
 
@@ -34,7 +19,6 @@ if TYPE_CHECKING:
     from logging import Logger
 
     from jaxtyping import Float
-    from matplotlib.axes import Axes
     from yacs.config import CfgNode
 
     # Dummy variables for jaxtyping to prevent Ruff F821 errors.
@@ -51,12 +35,22 @@ __epilog__: str = (
 )
 
 
-def main(argv: list[str] | None = None) -> int | str:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse the command-line arguments.
+
+    Returns
+    -------
+    argparse.Namespace
+        The parsed arguments.
+    """
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
-        description=__description__, epilog=__epilog__
+        description=__description__,
+        epilog=__epilog__,
     )
     parser.add_argument(
-        "--config", required=True, help="Base configuration file"
+        "--config",
+        required=True,
+        help="Base configuration file",
     )
     parser.add_argument(
         "--params",
@@ -70,7 +64,9 @@ def main(argv: list[str] | None = None) -> int | str:
         help="Number of configurations to generate",
     )
     parser.add_argument(
-        "--output_dir", default="configs", help="Output directory"
+        "--output_dir",
+        default="configs",
+        help="Output directory",
     )
     parser.add_argument(
         "--plots",
@@ -79,46 +75,68 @@ def main(argv: list[str] | None = None) -> int | str:
     )
     parser.add_argument("--seed", default=42, type=int, help="Random seed")
     parser.add_argument(
-        "-v", dest="verb", action="count", default=0, help="Verbosity level"
+        "-v",
+        dest="verb",
+        action="count",
+        default=0,
+        help="Verbosity level",
     )
-    a: argparse.Namespace = parser.parse_args(argv)
+    return parser.parse_args(argv)
 
-    # Get the logger
-    logger_level: int = 10 * (4 - a.verb)
-    logger: Logger = get_logger(__name__, level=logger_level)
-    logger.info("Starting...")
+
+def _load_resources(
+    a: argparse.Namespace,
+    logger: Logger,
+) -> tuple[CfgNode, Path, dict[str, dict[str, list[float]]], Path]:
+    """Load configuration and parameters.
+
+    Returns
+    -------
+    tuple[CfgNode, Path, dict, Path]
+        The configuration node, configuration file path, parameters dictionary, and output directory path.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the configuration or parameters file does not exist.
+    """
     cfg: CfgNode = get_cfg_defaults()
-
-    # Open the configuration file
-    if a.config is None:
-        logger.debug("No configuration file specified")
+    cfg_file = Path(os.path.expandvars(a.config)).absolute()
+    if cfg_file.exists():
+        cfg.merge_from_file(cfg_file)
     else:
-        logger.debug("Configuration file: %s" % a.config)
-        cfg_file = Path(os.path.expandvars(a.config)).absolute()
-        if cfg_file.exists():
-            logger.debug("Configuration file exists!")
-            cfg.merge_from_file(cfg_file)
-        else:
-            logger.error("Configuration file %s does not exist!", cfg_file)
-            raise FileNotFoundError(
-                "Configuration file %s does not exist!" % cfg_file
-            )
+        logger.error("Configuration file %s does not exist!", cfg_file)
+        raise FileNotFoundError(
+            "Configuration file %s does not exist!" % cfg_file,
+        )
     cfg.freeze()
 
-    # Output path
     output_dir: Path = Path(os.path.expandvars(a.output_dir)).absolute()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Parameters to be sampled
-    params: Path = Path(os.path.expandvars(a.params)).absolute()
-    if not params.exists():
-        logger.error("Parameters file %s does not exist!", params)
-        raise FileNotFoundError("Parameters file %s does not exist!" % params)
-    logger.debug("Opening parameters file %s", params)
-    with open(str(params)) as f:
+    params_path: Path = Path(os.path.expandvars(a.params)).absolute()
+    if not params_path.exists():
+        logger.error("Parameters file %s does not exist!", params_path)
+        raise FileNotFoundError(
+            "Parameters file %s does not exist!" % params_path,
+        )
+    logger.debug("Opening parameters file %s", params_path)
+    with Path(str(params_path)).open() as f:
         params: dict[str, dict[str, list[float]]] = json.load(f)
 
-    # Generate the configurations
+    return cfg, cfg_file, params, output_dir
+
+
+def _parse_bounds(
+    params: dict[str, dict[str, list[float]]],
+) -> tuple[list[tuple[str, str]], list[float], list[float]]:
+    """Parse parameters to extract names and bounds.
+
+    Returns
+    -------
+    tuple[list[tuple[str, str]], list[float], list[float]]
+        The list of parameter names, lower bounds, and upper bounds.
+    """
     names: list[tuple[str, str]] = []
     l_bounds: list[float] = []
     u_bounds: list[float] = []
@@ -127,86 +145,135 @@ def main(argv: list[str] | None = None) -> int | str:
             names.append((key.upper(), param.upper()))
             l_bounds.append(bounds[0])
             u_bounds.append(bounds[1])
+    return names, l_bounds, u_bounds
 
+
+def _generate_samples(
+    names: list[tuple[str, str]],
+    l_bounds: list[float],
+    u_bounds: list[float],
+    n_samples: int,
+    seed: int,
+    logger: Logger,
+) -> Float[np.ndarray, n, d] | Float[np.ndarray, n]:
+    """Generate LHS or linear samples.
+
+    Returns
+    -------
+    Float[np.ndarray, "n, d"] | Float[np.ndarray, "n"]
+        The generated samples.
+    """
     if len(names) > 1:
         logger.info("Generating LHS samples...")
         sampler: qmc.LatinHypercube = qmc.LatinHypercube(
-            d=len(names), seed=a.seed
+            d=len(names),
+            seed=seed,
         )
-        values: Float[np.ndarray, "n, d"] = sampler.random(n=a.n_samples)
-        values: Float[np.ndarray, "n, d"] = qmc.scale(
-            values, l_bounds, u_bounds
-        )
-    else:
-        logger.info("Generating linear samples...")
-        values: Float[np.ndarray, "n"] = np.linspace(
-            l_bounds[0], u_bounds[0], num=a.n_samples
-        )
+        values: Float[np.ndarray, n, d] = sampler.random(n=n_samples)
+        return qmc.scale(values, l_bounds, u_bounds)
 
-    # Create the configurations
+    logger.info("Generating linear samples...")
+    return np.linspace(l_bounds[0], u_bounds[0], num=n_samples)
+
+
+def _write_configs(
+    values: np.ndarray,
+    names: list[tuple[str, str]],
+    cfg: CfgNode,
+    cfg_file: Path,
+    output_dir: Path,
+) -> None:
+    """Write the sampled configurations to files."""
     for value in values:
         cfg_copy: CfgNode = cfg.clone()
         output_name: str = f"{cfg_file.stem}_"
         for i, name in enumerate(names):
-            v: float = value if len(names) <= 1 else value[i]
-            cfg_copy[name[0]][name[1]]: float = float(v)
+            v: float = float(value) if len(names) <= 1 else float(value[i])
+            cfg_copy[name[0]][name[1]] = v
             output_name += f"{name[1].lower()}={v:.9f}"
             if i < len(names) - 1:
                 output_name += "_"
         cfg_copy.freeze()
         output_name += ".yaml"
         output_path: Path = output_dir / output_name
-        with open(str(output_path), "w") as f:
+        with Path(str(output_path)).open("w") as f:
             f.write(cfg_copy.dump())
 
-    if a.plots:  # do not display unless explicitly requested
-        import matplotlib as mpl
-        from matplotlib import pyplot as plt
 
-        mpl.use("TkAgg")
-        plt.style.use("grayscale")
+def _visualize_sampling(
+    values: np.ndarray,
+    names: list[tuple[str, str]],
+) -> None:
+    """Visualize the sampling points."""
+    import matplotlib as mpl
+    from matplotlib import pyplot as plt
 
-        # Visualise sampling
-        if len(names) > 1:
-            comb: list[tuple[int, int]] = list(
-                combinations(range(len(names)), 2)
-            )
-            for i, j in comb:
-                x_label: str = ".".join(names[i])
-                y_label: str = ".".join(names[j])
-                x_values: Float[np.ndarray, "n"] = values[..., i]
-                y_values: Float[np.ndarray, "n"] = values[..., j]
+    mpl.use("TkAgg")
+    plt.style.use("grayscale")
 
-                _, ax = plt.subplots(figsize=(7, 5), layout="constrained")
-                ax.plot(x_values, y_values, "ko", alpha=0.5)
-                ax.set(xlabel=x_label, ylabel=y_label)
-                ax.ticklabel_format(
-                    axis="both",
-                    style="sci",
-                    scilimits=(0, 0),
-                    useMathText=True,
-                )
-                plt.show()
-        else:
-            x_label: str = ".".join(names[0])
-            x_values: Float[np.ndarray, "n"] = values[..., 0]
+    if len(names) > 1:
+        comb: list[tuple[int, int]] = list(combinations(range(len(names)), 2))
+        for i, j in comb:
+            x_label: str = ".".join(names[i])
+            y_label: str = ".".join(names[j])
+            x_vals: Float[np.ndarray, n] = values[..., i]
+            y_vals: Float[np.ndarray, n] = values[..., j]
 
-            ax: Axes
             _, ax = plt.subplots(figsize=(7, 5), layout="constrained")
-            ax.plot(x_values, [0.0] * len(x_values), "kx", alpha=0.5)
-            ax.set(xlabel=x_label, ylabel="", yticks=[])
+            ax.plot(x_vals, y_vals, "ko", alpha=0.5)
+            ax.set(xlabel=x_label, ylabel=y_label)
             ax.ticklabel_format(
-                axis="x",
+                axis="both",
                 style="sci",
                 scilimits=(0, 0),
                 useMathText=True,
             )
             plt.show()
+    else:
+        x_label: str = ".".join(names[0])
+        x_vals: Float[np.ndarray, n] = values[..., 0]
+
+        _, ax = plt.subplots(figsize=(7, 5), layout="constrained")
+        ax.plot(x_vals, [0.0] * len(x_vals), "kx", alpha=0.5)
+        ax.set(xlabel=x_label, ylabel="", yticks=[])
+        ax.ticklabel_format(
+            axis="x",
+            style="sci",
+            scilimits=(0, 0),
+            useMathText=True,
+        )
+        plt.show()
+
+
+def main(argv: list[str] | None = None) -> int | str:
+    a: argparse.Namespace = _parse_args(argv)
+
+    # Get the logger
+    logger_level: int = 10 * (4 - a.verb)
+    logger: Logger = get_logger(__name__, level=logger_level)
+    logger.info("Starting...")
+
+    cfg, cfg_file, params, output_dir = _load_resources(a, logger)
+    names, l_bounds, u_bounds = _parse_bounds(params)
+    values: np.ndarray = _generate_samples(
+        names,
+        l_bounds,
+        u_bounds,
+        a.n_samples,
+        a.seed,
+        logger,
+    )
+
+    # Create the configurations
+    _write_configs(values, names, cfg, cfg_file, output_dir)
+
+    if a.plots:
+        _visualize_sampling(values, names)
 
     return 0
 
 
-def cli():
+def cli():  # noqa
     raise SystemExit(main())
 
 

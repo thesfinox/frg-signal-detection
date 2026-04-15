@@ -1,20 +1,5 @@
 #! /usr/bin/env python3
-"""
-Initialisation
---------------
-
-This script provides a CLI command to initialize a user workspace by copying template configuration files from the package distribution to the current working directory.
-
-Authors
--------
-
-- Riccardo Finotello <riccardo.finotello@cea.fr>
-
-Maintainers
------------
-
-- Riccardo Finotello
-"""
+"""Provide a CLI command to initialize a user workspace by copying template configuration files from the package distribution to the current working directory."""
 
 from __future__ import annotations
 
@@ -33,9 +18,15 @@ __epilog__: str = (
 )
 
 
-def copy_resource_dir(resource_pkg: str, target_dir: Path):
-    """
-    Copy a directory from package resources to a target path.
+def copy_resource_dir(resource_pkg: str, target_dir: Path) -> None:
+    """Copy a directory from package resources to a target path.
+
+    Parameters
+    ----------
+    resource_pkg : str
+        The package containing the resources to copy.
+    target_dir : Path
+        The target directory where resources will be copied.
     """
     try:
         # Use importlib.resources to find the path to the internal data
@@ -68,10 +59,12 @@ def copy_resource_dir(resource_pkg: str, target_dir: Path):
 
 def main(argv: list[str] | None = None) -> int | str:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
-        description="Initialize the frg workspace by copying template configs and scripts."
+        description="Initialize the frg workspace by copying template configs and scripts.",
     )
     parser.add_argument(
-        "--force", action="store_true", help="Overwrite existing files."
+        "--force",
+        action="store_true",
+        help="Overwrite existing files.",
     )
     args: argparse.Namespace = parser.parse_args(argv)
 
@@ -103,13 +96,13 @@ def main(argv: list[str] | None = None) -> int | str:
     copy_resource_dir("frg.notebooks", notebooks_dir)
 
     print(
-        "\n[SUCCESS] Workspace initialized. You can now customize your configs and run the simulations."
+        "\n[SUCCESS] Workspace initialized. You can now customize your configs and run the simulations.",
     )
 
     return 0
 
 
-def cli():
+def cli():  # noqa
     raise SystemExit(main())
 
 

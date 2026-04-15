@@ -1,20 +1,4 @@
-"""
-Distributions
--------------
-
-Distributions used in experiments and simulations. The module provides both empirical and theoretical distributions to reproduce specific spectra of momenta.
-
-Authors
--------
-
-- Riccardo Finotello <riccardo.finotello@cea.fr>
-- Parham Radpay <parhamradpay@gmail.com>
-
-Maintainers
------------
-
-- Riccardo Finotello
-"""
+"""Distributions used in experiments and simulations. The module provides both empirical and theoretical distributions to reproduce specific spectra of momenta."""
 
 from __future__ import annotations
 
@@ -48,7 +32,8 @@ if TYPE_CHECKING:
 class Distribution:
     """An abstract base class for distributions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the distribution."""
         # Parameters (set to placeholder values)
         #
         # - m^2 : inverse of the largest eigenvalue (mass)
@@ -63,17 +48,28 @@ class Distribution:
 
     @overload
     def pdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def pdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the value of the *Probability Density Function* (PDF) of a random variable :math:`X` at given value(s) :math:`x`.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the value of the *Probability Density Function* (PDF) of a random variable :math:`X` at given value(s) :math:`x`.
+
+        Parameters
+        ----------
+        x : float or ndarray of floats
+            The value(s) at which to evaluate the PDF (shape: scalar or array of shape :math:`n`).
+
+        Returns
+        -------
+        float or ndarray of floats
+            The value(s) of the PDF at the given value(s) (shape: scalar or array of shape :math:`n`).
         """
         raise NotImplementedError(
-            "All sublasses of Distribution must implement a custom `pdf` method!"
+            "All sublasses of Distribution must implement a custom `pdf` method!",
         )
 
     @overload
@@ -81,17 +77,28 @@ class Distribution:
 
     @overload
     def cdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def cdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the value of the *Cumulative Distribution Function* (CDF) of a random variable :math:`X` at given value(s) :math:`x`.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the value of the *Cumulative Distribution Function* (CDF) of a random variable :math:`X` at given value(s) :math:`x`.
+
+        Parameters
+        ----------
+        x : float or ndarray of floats
+            The value(s) at which to evaluate the CDF (shape: scalar or array of shape :math:`n`).
+
+        Returns
+        -------
+        float or ndarray of floats
+            The value(s) of the CDF at the given value(s) (shape: scalar or array of shape :math:`n`).
         """
         raise NotImplementedError(
-            "All sublasses of Distribution must implement a custom `cdf` method!"
+            "All sublasses of Distribution must implement a custom `cdf` method!",
         )
 
     @overload
@@ -99,25 +106,30 @@ class Distribution:
 
     @overload
     def dpdf(
-        self, x: Float[np.ndarray, "n_samples"], eps: float = 1.0e-6
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+        eps: float = 1.0e-6,
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def dpdf(
-        self, x: float | Float[np.ndarray, "n_samples"], eps: float = 1.0e-6
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the derivative of the PDF of a random variable :math:`X` at given value(s) :math:`x`. The derivative is computed using the finite difference method:
+        self,
+        x: float | Float[np.ndarray, n_samples],
+        eps: float = 1.0e-6,
+    ) -> float | Float[np.ndarray, n_samples]:
+        r"""Compute the derivative of the PDF of a random variable :math:`X` at given value(s) :math:`x`.
+
+        The derivative is computed using the finite difference method:
 
         .. math::
 
-            f'(x) \\approx \\frac{f(x + \\epsilon) - f(x - \\epsilon)}{2 \\epsilon}
+            f'(x) \approx \frac{f(x + \epsilon) - f(x - \epsilon)}{2 \epsilon}
 
         Parameters
         ----------
         x : float or ndarray of floats
             The point(s) at which to compute the derivative of the PDF (shape: scalar or array of shape :math:`n`).
         eps : float
-            The incremental ratio :math:`\\epsilon`, by default :math:`10^{-9}`.
+            The incremental ratio :math:`\epsilon`, by default :math:`10^{-9}`.
 
         Returns
         -------
@@ -133,13 +145,14 @@ class Distribution:
 
     @overload
     def ipdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
     def ipdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the PDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the PDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`.
 
         Parameters
         ----------
@@ -178,13 +191,14 @@ class Distribution:
 
     @overload
     def lnipdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
     def lnipdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the natural log-PDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the natural log-PDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`.
 
         Parameters
         ----------
@@ -205,14 +219,15 @@ class Distribution:
 
     @overload
     def icdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def icdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the CDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the CDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`.
 
         Parameters
         ----------
@@ -235,25 +250,29 @@ class Distribution:
 
     @overload
     def dipdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def dipdf(
-        self, x: float | Float[np.ndarray, "n_samples"], eps: float = 1.0e-6
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the derivative of the PDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`. The derivative is computed using a central difference method:
+        self,
+        x: float | Float[np.ndarray, n_samples],
+        eps: float = 1.0e-6,
+    ) -> float | Float[np.ndarray, n_samples]:
+        r"""Compute the derivative of the PDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`.
+
+        The derivative is computed using a central difference method:
 
         .. math::
 
-            f'(x) \\approx \\frac{f(x + \\epsilon) - f(x - \\epsilon)}{2 \\epsilon}
+            f'(x) \approx \frac{f(x + \epsilon) - f(x - \epsilon)}{2 \epsilon}
 
         Parameters
         ----------
         x : float or ndarray of floats
             The value(s) at which to evaluate the derivative of the inverse PDF (shape: scalar or array of shape :math:`n`).
         eps : float
-            The incremental ratio :math:`\\epsilon`, by default :math:`10^{-9}`.
+            The incremental ratio :math:`\epsilon`, by default :math:`10^{-9}`.
 
         Returns
         -------
@@ -269,25 +288,29 @@ class Distribution:
 
     @overload
     def dlnipdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def dlnipdf(
-        self, x: float | Float[np.ndarray, "n_samples"], eps: float = 1.0e-6
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the derivative of the natural log-PDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`. The derivative is computed using a central difference method:
+        self,
+        x: float | Float[np.ndarray, n_samples],
+        eps: float = 1.0e-6,
+    ) -> float | Float[np.ndarray, n_samples]:
+        r"""Compute the derivative of the natural log-PDF of the inverse of the random variable :math:`X` (i.e. :math:`Y = 1 / X`) at given value(s) :math:`x`.
+
+        The derivative is computed using a central difference method:
 
         .. math::
 
-            f'(x) \\approx \\frac{f(x + \\epsilon) - f(x - \\epsilon)}{2 \\epsilon}
+            f'(x) \approx \frac{f(x + \epsilon) - f(x - \epsilon)}{2 \epsilon}
 
         Parameters
         ----------
         x : float or ndarray of floats
             The value(s) at which to evaluate the derivative of the natural log-inverse PDF (shape: scalar or array of shape :math:`n`).
         eps : float
-            The incremental ratio :math:`\\epsilon`, by default :math:`10^{-9}`.
+            The incremental ratio :math:`\epsilon`, by default :math:`10^{-9}`.
 
         Returns
         -------
@@ -299,14 +322,20 @@ class Distribution:
         return self._diff(self.lnipdf, x, eps)
 
     def _diff(
-        self, func: Callable[[float], float], x: float, eps: float = 1.0e-6
+        self,
+        func: Callable[[float], float],
+        x: float,
+        eps: float = 1.0e-6,
     ) -> float:
-        """
-        Compute a derivative of a function using a central difference method:
+        r"""Compute a derivative of a function using a central difference method.
+
+        Notes
+        -----
+        The formula used is a centered difference method:
 
         .. math::
 
-            f'(x) \\approx \\frac{f(x + \\epsilon) - f(x - \\epsilon)}{2 \\epsilon}
+            f'(x) \approx \frac{f(x + \epsilon) - f(x - \epsilon)}{2 \epsilon}
 
         Parameters
         ----------
@@ -327,34 +356,39 @@ class Distribution:
         return num / den if den != 0.0 else 0.0
 
     @overload
-    def canonical_dimensions(self, x: float) -> Float[np.ndarray, "4"]: ...
+    def canonical_dimensions(self, x: float) -> Float[np.ndarray, 4]: ...
 
     @overload
     def canonical_dimensions(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples, 4"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples, 4]: ...
 
     def canonical_dimensions(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "4"] | Float[np.ndarray, "n_samples, 4"]:
-        """
-        Compute the canonical dimensions of the distribution using the following formulae:
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, 4] | Float[np.ndarray, n_samples, 4]:
+        r"""Compute the canonical dimensions of the distribution.
+
+        Notes
+        -----
+        The method uses the following formulae:
 
         .. math::
 
-            \\text{dim}_{u_2}(k^2) = \\frac{\\int^{k^2}_0 \\mathrm{d}p^2 \\rho(p^2)}{k^2 \\rho(k^2)}
+            \text{dim}_{u_2}(k^2) = \frac{\int^{k^2}_0 \mathrm{d}p^2 \rho(p^2)}{k^2 \rho(k^2)}
 
         .. math::
 
-            \\text{dim}_{u_4}(k^2) = \\text{dim}_{u_2}(k^2) \\left( 3 + k^2 \\frac{\\partial \\ln \\rho(k^2)}{\\partial k^2} - 2 \\right)
+            \text{dim}_{u_4}(k^2) = \text{dim}_{u_2}(k^2) \left( 3 + k^2 \frac{\partial \ln \rho(k^2)}{\partial k^2} - 2 \right)
 
         .. math::
 
-            \\text{dim}_{u_6}(k^2) = -\\text{dim}_{u_2}(k^2) + 2 \\cdot \\text{dim}_{u_4}(k^2)
+            \text{dim}_{u_6}(k^2) = -\text{dim}_{u_2}(k^2) + 2 \cdot \text{dim}_{u_4}(k^2)
 
         .. math::
 
-            \\text{dim}_{\\chi}(k^2)= 1 - \\text{dim}_{u_2}(k^2)
+            \text{dim}_{\chi}(k^2)= 1 - \text{dim}_{u_2}(k^2)
 
         Parameters
         ----------
@@ -364,7 +398,7 @@ class Distribution:
         Returns
         -------
         ndarray of floats
-            An array containing, in columns (shape: :math:`4`, if input is scalar, or :math:`n \\times 4`, if input is array):
+            An array containing, in columns (shape: :math:`4`, if input is scalar, or :math:`n \times 4`, if input is array):
 
             - ``dim_u2``: the mass term
             - ``dim_u4``: the quartic interaction
@@ -394,8 +428,9 @@ class Distribution:
         u6: float,
         dx: float = 1.0e-9,
         return_rhs: bool = False,
-    ) -> Float[np.ndarray, "3"]:
-        """
+    ) -> Float[np.ndarray, 3]:
+        """Compute the FRG equations at a given point.
+
         Parameters
         ----------
         x : float
@@ -462,21 +497,22 @@ class Distribution:
         dx: float = 1.0e-9,
         x_ir: float = 0.0,
         use_naive_euler: bool = True,
-    ) -> Float[np.ndarray, "n_steps, 4"]:
-        """
-        Given initial conditions of the couplings :math:`u_2`, :math:`u_4`, and :math:`u_6` at a given momentum scale :math:`k^2`, the function returns the values of the couplings at the scale :math:`k^2 - \\Delta_k`. That is, the function returns the running of the couplings from the UV region towards the IR (:math:`k^2 \\to 0`):
+    ) -> Float[np.ndarray, n_steps, 4]:
+        r"""Compute the FRG equations.
+
+        Given initial conditions of the couplings :math:`u_2`, :math:`u_4`, and :math:`u_6` at a given momentum scale :math:`k^2`, the function returns the values of the couplings at the scale :math:`k^2 - \Delta_k`. That is, the function returns the running of the couplings from the UV region towards the IR (:math:`k^2 \to 0`):
 
         .. math::
 
-            \\dot{u}_2 = - \\text{dim}_{u_2} u_2 - 2 \\frac{u_4}{(1 + u_2)^2}
+            \dot{u}_2 = - \text{dim}_{u_2} u_2 - 2 \frac{u_4}{(1 + u_2)^2}
 
         .. math::
 
-            \\dot{u}_4 = - \\text{dim}_{u_4} u_4 - 2 \\frac{u_6}{(1 + u_2)^2} + 12 \\frac{u_4^2}{(1 + u_2)^3}
+            \dot{u}_4 = - \text{dim}_{u_4} u_4 - 2 \frac{u_6}{(1 + u_2)^2} + 12 \frac{u_4^2}{(1 + u_2)^3}
 
         .. math::
 
-            \\dot{u}_6 = - \\text{dim}_{u_6} u_6 + 60 \\frac{u_4 u_6}{(1 + u_2)^3} - 108 \\frac{u_6^3}{(1 + u_2)^4}
+            \dot{u}_6 = - \text{dim}_{u_6} u_6 + 60 \frac{u_4 u_6}{(1 + u_2)^3} - 108 \frac{u_6^3}{(1 + u_2)^4}
 
         Parameters
         ----------
@@ -498,7 +534,7 @@ class Distribution:
         Returns
         -------
         ndarray of floats
-            An array containing, in columns (shape: :math:`S \\times 4` where :math:`S` is the number of steps):
+            An array containing, in columns (shape: :math:`S \times 4` where :math:`S` is the number of steps):
 
             - ``k2``: the energy scale corresponding to the couplings
             - ``u2``: the running of the coupling :math:`u_2`
@@ -509,7 +545,7 @@ class Distribution:
 
             .. math::
 
-                S = \\lfloor \\frac{x - x_{\\text{IR}}}{\\Delta x} \\rfloor
+                S = \lfloor \frac{x - x_{\text{IR}}}{\Delta x} \rfloor
         """
         # Compute the energy scale
         k2: float
@@ -533,8 +569,9 @@ class Distribution:
         else:
             # Define a closure with the signature needed by the solver
             def flow_derivative(
-                t: float, y: Float[np.ndarray, "3"]
-            ) -> Float[np.ndarray, "3"]:
+                t: float,
+                y: Float[np.ndarray, 3],
+            ) -> Float[np.ndarray, 3]:
                 u2: float
                 u4: float
                 u6: float
@@ -571,14 +608,15 @@ class Distribution:
         u6: float,
         dx: float = 1.0e-9,
         return_rhs: bool = False,
-    ) -> Float[np.ndarray, "3"]:
-        """
+    ) -> Float[np.ndarray, 3]:
+        r"""Compute the FRG equations (LPA) at a given point.
+
         Parameters
         ----------
         x : float
             The momentum scale :math:`k^2` at which to start computing the FRG equations. This represents an energy scale in the UV region. The FRG computation ends in the IR region.
         kappa : float
-            The initial value of the position of the field :math:`\\chi` at energy scale :math:`x`.
+            The initial value of the position of the field :math:`\chi` at energy scale :math:`x`.
         u4 : float
             The initial value of the coupling :math:`u_4` at energy scale :math:`x`.
         u6 : float
@@ -593,7 +631,7 @@ class Distribution:
         ndarray of floats
             An array containing, in columns (shape: :math:`3`):
 
-            - ``kappa``: the running of the position of the zero :math:`kappa`
+            - ``kappa``: the running of the position of the zero :math:`\kappa`
             - ``u4``: the running of the coupling :math:`u_4`
             - ``u6``: the running of the coupling :math:`u_6`
         """
@@ -652,28 +690,29 @@ class Distribution:
         dx: float = 1.0e-9,
         x_ir: float = 0.0,
         use_naive_euler: bool = True,
-    ) -> Float[np.ndarray, "n_steps, 4"]:
-        """
-        Given initial conditions of the zero of the potential :math:`\\kappa` and the couplings :math:`u_2`, and :math:`u_4` at a given momentum scale :math:`k^2`, the function returns the values of the couplings at the scale :math:`k^2 - \\Delta_k` in **Local Potential Approximation** (LPA). That is, the function returns the running of the couplings from the UV region towards the IR (:math:`k^2 \\to 0`):
+    ) -> Float[np.ndarray, n_steps, 4]:
+        r"""Compute the FRG equations (LPA).
+
+        Given initial conditions of the zero of the potential :math:`\kappa` and the couplings :math:`u_2`, and :math:`u_4` at a given momentum scale :math:`k^2`, the function returns the values of the couplings at the scale :math:`k^2 - \Delta_k` in **Local Potential Approximation** (LPA). That is, the function returns the running of the couplings from the UV region towards the IR (:math:`k^2 \to 0`):
 
         .. math::
 
-            \\dot{\\kappa} = - \\text{dim}_{\\chi} \\kappa + 2 \\frac{3 + 2 \\kappa \\frac{u_6}{u_4}}{(1 + 2 \\kappa u_4)^2}
+            \dot{\kappa} = - \text{dim}_{\chi} \kappa + 2 \frac{3 + 2 \kappa \frac{u_6}{u_4}}{(1 + 2 \kappa u_4)^2}
 
         .. math::
 
-            \\dot{u}_4 = - \\text{dim}_{u_4} u_4 + \\text{dim}_{\\chi} \\kappa u_6 - 10 \\frac{u_6}{(1 + 2 \\kappa u_4)^2} + 4 \\frac{(3 u_4 + 2 \\kappa u_6)^2}{(1 + 2 \\kappa u_4)^3}
+            \dot{u}_4 = - \text{dim}_{u_4} u_4 + \text{dim}_{\chi} \kappa u_6 - 10 \frac{u_6}{(1 + 2 \kappa u_4)^2} + 4 \frac{(3 u_4 + 2 \kappa u_6)^2}{(1 + 2 \kappa u_4)^3}
 
         .. math::
 
-            \\dot{u}_6 = - \\text{dim}_{u_6} u_6 - 12 \\frac{(3 u_4 + 2 \\kappa u_6)^3}{(1 + 2 \\kappa u_4)^4} + 40 \\frac{u_6 (3 u_4 + 2 \\kappa u_6)}{(1 + 2 \\kappa u_4)^2}
+            \dot{u}_6 = - \text{dim}_{u_6} u_6 - 12 \frac{(3 u_4 + 2 \kappa u_6)^3}{(1 + 2 \kappa u_4)^4} + 40 \frac{u_6 (3 u_4 + 2 \kappa u_6)}{(1 + 2 \kappa u_4)^2}
 
         Parameters
         ----------
         x : float
             The momentum scale :math:`k^2` at which to start computing the FRG equations. This represents an energy scale in the UV region. The FRG computation ends in the IR region.
         kappa_init : float
-            The initial value of the position of the zero of the potential :math:`\\kappa` at energy scale :math:`x`.
+            The initial value of the position of the zero of the potential :math:`\kappa` at energy scale :math:`x`.
         u4_init : float
             The initial value of the coupling :math:`u_4` at energy scale :math:`x`.
         u6_init : float
@@ -688,10 +727,10 @@ class Distribution:
         Returns
         -------
         ndarray of floats
-            An array containing, in columns (shape: :math:`S \\times 4` where :math:`S` is the number of steps):
+            An array containing, in columns (shape: :math:`S \times 4` where :math:`S` is the number of steps):
 
             - ``k2``: the energy scale corresponding to the couplings
-            - ``kappa``: the running of the zero of the potential :math:`kappa`
+            - ``kappa``: the running of the zero of the potential :math:`\kappa`
             - ``u4``: the running of the coupling :math:`u_4`
             - ``u6``: the running of the coupling :math:`u_6`
 
@@ -699,7 +738,7 @@ class Distribution:
 
             .. math::
 
-                S = \\lfloor \\frac{x - x_{\\text{IR}}}{\\Delta x} \\rfloor
+                S = \lfloor \frac{x - x_{\text{IR}}}{\Delta x} \rfloor
         """
         # Compute the energy scale
         k2: float
@@ -724,8 +763,9 @@ class Distribution:
         else:
             # Define a closure with the signature needed by the SciPy solver
             def flow_derivative(
-                t: float, y: Float[np.ndarray, "3"]
-            ) -> Float[np.ndarray, "3"]:
+                t: float,
+                y: Float[np.ndarray, 3],
+            ) -> Float[np.ndarray, 3]:
                 kappa_val: float
                 u4_val: float
                 u6_val: float
@@ -768,11 +808,14 @@ class EmpiricalDistribution(Distribution):
         poisson_data: bool = False,
         poisson_lam: float = 10.0,
         poisson_centering: Literal[
-            "centered", "non-centered", "mirrored"
+            "centered",
+            "non-centered",
+            "mirrored",
         ] = "centered",
         seed: int = 42,
     ):
-        """
+        r"""Initialize the empirical distribution.
+
         Parameters
         ----------
         n_samples : int
@@ -784,7 +827,7 @@ class EmpiricalDistribution(Distribution):
 
             .. note::
 
-                Let :math:`X \\in \\mathbb{R}^{n \\times p}` be a real matrix where samples are **row** vectors, then the ``ratio`` parameter is :math:`\\frac{p}{n}`.
+                Let :math:`X \in \mathbb{R}^{n \times p}` be a real matrix where samples are **row** vectors, then the ``ratio`` parameter is :math:`\frac{p}{n}`.
 
         is_poisson : bool
             Add Poisson noise (e.g. photon counting), by default ``False``.
@@ -800,29 +843,78 @@ class EmpiricalDistribution(Distribution):
         seed : int
             The random seed, by default ``42``.
 
-        Raises
-        ------
-        ValueError
-            If the size of the sample is less than 2
-        ValueError
-            If variance is negative
-        ValueError
-            If ratio is not strictly positive
-        ValueError
-            If the Poisson rate parameter is negative
-        ValueError
-            If poisson_centering is not one of "centered", "non-centered", or "mirrored".
-
         Warns
         -----
         UserWarning
             If the size of the sample is less than 1000 (sample too small)
         """
         super().__init__()
+        self._validate_params(
+            n_samples,
+            var,
+            ratio,
+            poisson_lam,
+            poisson_centering,
+        )
+
+        self.n_samples: int = int(n_samples)
+        self.var: float = float(var)
+        self.ratio: float = float(ratio)
+        self.n_vars: int = int(n_samples * ratio)
+        self.is_poisson: bool = bool(is_poisson)
+        self.poisson_data: bool = bool(poisson_data)
+        self.poisson_lam: float = float(poisson_lam)
+        self.poisson_centering: Literal[
+            "centered",
+            "non-centered",
+            "mirrored",
+        ] = poisson_centering
+        self.seed: int = int(seed)
+        self._fitted: bool = False
+        self._iscov: bool = False
+
+        # Generate the background distribution
+        gen: Generator = np.random.default_rng(self.seed)
+        self._noise: Float[np.ndarray, n_samples, n_vars] = (
+            self._generate_base_noise(gen)
+        )
+
+        # Handle Poisson noise
+        if self.is_poisson:
+            self._handle_poisson_noise(gen)
+
+        # Prepare data
+        self.data: Float[np.ndarray, n_samples, n_vars] = self._noise
+        self.eigenvectors_: Float[np.ndarray, n_samples, n_vars] | None = None
+        self.eigenvalues_: Float[np.ndarray, n_vars] | None = None
+
+    def _validate_params(
+        self,
+        n_samples: int,
+        var: float,
+        ratio: float,
+        poisson_lam: float,
+        poisson_centering: str,
+    ) -> None:
+        """Validate the input parameters.
+
+        Raises
+        ------
+        ValueError
+            If the size of the sample is less than 2.
+        ValueError
+            If variance is negative.
+        ValueError
+            If ratio is not strictly positive.
+        ValueError
+            If the Poisson rate parameter is negative.
+        ValueError
+            If poisson_centering is not one of "centered", "non-centered", or "mirrored".
+        """
         if n_samples < 2:
             raise ValueError(
                 "The number of samples must be a large number but got %d < 2!"
-                % n_samples
+                % n_samples,
             )
         if n_samples < 1000:
             warn(
@@ -830,146 +922,115 @@ class EmpiricalDistribution(Distribution):
                 % n_samples,
                 category=UserWarning,
             )
-        self.n_samples: int = int(n_samples)
         if var < 0.0:
             raise ValueError(
-                "The variance must be non-negative but got %f < 0" % var
+                "The variance must be non-negative but got %f < 0" % var,
             )
-        self.var: float = float(var)
         if ratio <= 0.0:
             raise ValueError(
-                "Ratio must be strictly positive but got %f <= 0" % ratio
+                "Ratio must be strictly positive but got %f <= 0" % ratio,
             )
-        self.ratio: float = float(ratio)
-        self.n_vars: int = int(n_samples * ratio)  # no. of vars / cols
-        self.is_poisson: bool = bool(is_poisson)
-        self.poisson_data: bool = bool(poisson_data)
         if poisson_lam < 0.0:
             raise ValueError(
                 "The rate parameter for the Poisson distribution must be non-negative but got %f < 0"
-                % poisson_lam
+                % poisson_lam,
             )
-        self.poisson_lam: float = float(poisson_lam)
         if poisson_centering not in ["centered", "non-centered", "mirrored"]:
             raise ValueError(
                 "poisson_centering must be one of 'centered', 'non-centered', or 'mirrored' but got %s"
-                % poisson_centering
+                % poisson_centering,
             )
-        self.poisson_centering: Literal[
-            "centered", "non-centered", "mirrored"
-        ] = poisson_centering
-        self.seed: int = int(seed)
-        self._fitted: bool = False
-        self._iscov: bool = False  # if generated directly from covariance
 
-        # Generate the background distribution
-        gen: Generator = np.random.default_rng(self.seed)
-        self._noise: Float[np.ndarray, "n_samples, n_vars"] = (
-            gen.normal(
-                loc=0.0,
-                scale=np.sqrt(self.var),
-                size=(self.n_samples, self.n_vars),
-            )
-            if self.var > 0.0
-            else np.zeros((self.n_samples, self.n_vars))
-        )
-
-        # Handle Poisson noise
-        #
-        # Case 1: Poisson noise is added directly to the data
-        #         ---> The noise matrix has size n x p
-        if self.is_poisson and (self.poisson_data):
-            if self.poisson_centering == "non-centered":
-                self._noise: Float[np.ndarray, "n_samples, n_vars"] = (
-                    gen.poisson(
-                        lam=self.poisson_lam,
-                        size=(self.n_samples, self.n_vars),
-                    )
-                )
-                self.var: float = self.poisson_lam
-            elif self.poisson_centering == "centered":
-                self._noise: Float[np.ndarray, "n_samples, n_vars"] = (
-                    gen.poisson(
-                        lam=self.poisson_lam,
-                        size=(self.n_samples, self.n_vars),
-                    )
-                    - self.poisson_lam
-                )
-                self.var: float = self.poisson_lam
-            elif self.poisson_centering == "mirrored":
-                self._noise: Float[np.ndarray, "n_samples, n_vars"] = (
-                    gen.poisson(
-                        lam=self.poisson_lam,
-                        size=(self.n_samples, self.n_vars),
-                    )
-                    - gen.poisson(
-                        lam=self.poisson_lam,
-                        size=(self.n_samples, self.n_vars),
-                    )
-                )
-                self.var: float = 2.0 * self.poisson_lam
-        #
-        # Case 2: Poisson noise is added to the covariance matrix
-        #         ---> The noise matrix has size p x p
-        if self.is_poisson and (not self.poisson_data):
-            if self.poisson_centering == "non-centered":
-                base_noise: Float[np.ndarray, "n_samples, n_vars"] = (
-                    gen.poisson(
-                        lam=self.poisson_lam,
-                        size=(self.n_samples, self.n_vars),
-                    )
-                )
-            elif self.poisson_centering == "centered":
-                base_noise: Float[np.ndarray, "n_samples, n_vars"] = (
-                    gen.poisson(
-                        lam=self.poisson_lam,
-                        size=(self.n_samples, self.n_vars),
-                    )
-                    - self.poisson_lam
-                )
-            elif self.poisson_centering == "mirrored":
-                base_noise: Float[np.ndarray, "n_samples, n_vars"] = (
-                    gen.poisson(
-                        lam=self.poisson_lam,
-                        size=(self.n_samples, self.n_vars),
-                    )
-                    - gen.poisson(
-                        lam=self.poisson_lam,
-                        size=(self.n_samples, self.n_vars),
-                    )
-                )
-
-            # Symmetric noise matrix (positive semi-definite)
-            self._cov_noise: Float[np.ndarray, "n_vars, n_vars"] = (
-                base_noise.T @ base_noise
-            ) / max(1.0, float(self.n_samples - 1))
-
-        # Prepare data
-        self.data: Float[np.ndarray, "n_samples, n_vars"] = self._noise
-        self.eigenvectors_: Float[np.ndarray, "n_samples, n_vars"] | None = None
-        self.eigenvalues_: Float[np.ndarray, "n_vars"] | None = None
-
-    @property
-    def data(self) -> Float[np.ndarray, "n_samples, n_vars"]:
-        """
-        Return the data matrix.
+    def _generate_base_noise(
+        self,
+        gen: Generator,
+    ) -> Float[np.ndarray, n_samples, n_vars]:
+        r"""Generate the base background noise.
 
         Returns
         -------
         ndarray of floats
-            The data matrix (shape: :math:`n \\times p`).
+            The generated noise matrix (shape: :math:`n \times p`).
+        """
+        if self.var > 0.0:
+            return gen.normal(
+                loc=0.0,
+                scale=np.sqrt(self.var),
+                size=(self.n_samples, self.n_vars),
+            )
+        return np.zeros((self.n_samples, self.n_vars))
+
+    def _handle_poisson_noise(self, gen: Generator) -> None:
+        """Handle the addition of Poisson noise."""
+        # Case 1: Poisson noise is added directly to the data
+        if self.poisson_data:
+            self._noise = self._generate_poisson_samples(gen)
+            self.var = (
+                self.poisson_lam
+                if self.poisson_centering != "mirrored"
+                else 2.0 * self.poisson_lam
+            )
+        # Case 2: Poisson noise is added to the covariance matrix
+        else:
+            base_noise: Float[np.ndarray, n_samples, n_vars] = (
+                self._generate_poisson_samples(gen)
+            )
+            self._cov_noise: Float[np.ndarray, n_vars, n_vars] = (
+                base_noise.T @ base_noise
+            ) / max(1.0, float(self.n_samples - 1))
+
+    def _generate_poisson_samples(
+        self,
+        gen: Generator,
+    ) -> Float[np.ndarray, n_samples, n_vars]:
+        r"""Generate Poisson noise samples based on the centering method.
+
+        Returns
+        -------
+        ndarray of floats
+            The generated Poisson noise matrix (shape: :math:`n \times p`).
+        """
+        if self.poisson_centering == "non-centered":
+            return gen.poisson(
+                lam=self.poisson_lam,
+                size=(self.n_samples, self.n_vars),
+            )
+        if self.poisson_centering == "centered":
+            return (
+                gen.poisson(
+                    lam=self.poisson_lam,
+                    size=(self.n_samples, self.n_vars),
+                )
+                - self.poisson_lam
+            )
+        # mirrored
+        return gen.poisson(
+            lam=self.poisson_lam,
+            size=(self.n_samples, self.n_vars),
+        ) - gen.poisson(
+            lam=self.poisson_lam,
+            size=(self.n_samples, self.n_vars),
+        )
+
+    @property
+    def data(self) -> Float[np.ndarray, n_samples, n_vars]:
+        r"""Return the data matrix.
+
+        Returns
+        -------
+        ndarray of floats
+            The data matrix (shape: :math:`n \times p`).
         """
         return self._data
 
     @data.setter
-    def data(self, value: Float[np.ndarray, "n_samples, n_vars"]) -> None:
-        """
-        Set the data matrix.
+    def data(self, value: Float[np.ndarray, n_samples, n_vars]) -> None:
+        r"""Set the data matrix.
 
         Parameters
         ----------
         value : ndarray of floats
-            The data matrix (shape: :math:`n \\times p`).
+            The data matrix (shape: :math:`n \times p`).
 
         Raises
         ------
@@ -979,14 +1040,13 @@ class EmpiricalDistribution(Distribution):
         if value.ndim != 2:
             raise ValueError(
                 "The data matrix must be 2-dimensional but got %d-dimensional"
-                % value.ndim
+                % value.ndim,
             )
-        self._data: Float[np.ndarray, "n_samples, n_vars"] = value
+        self._data: Float[np.ndarray, n_samples, n_vars] = value
 
     @classmethod
     def from_config(cls, cfg: CfgNode) -> EmpiricalDistribution:
-        """
-        Create an instance of the class from a configuration.
+        """Create an instance of the class from a configuration.
 
         Parameters
         ----------
@@ -1011,15 +1071,16 @@ class EmpiricalDistribution(Distribution):
 
     @classmethod
     def from_covariance(
-        cls, cov: Float[np.ndarray, "n_samples, n_vars"], cfg: CfgNode
+        cls,
+        cov: Float[np.ndarray, n_samples, n_vars],
+        cfg: CfgNode,
     ) -> EmpiricalDistribution:
-        """
-        Create an instance of the class from a covariance matrix.
+        r"""Create an instance of the class from a covariance matrix.
 
         Parameters
         ----------
         cov : ndarray of floats
-            The covariance matrix (shape: :math:`n \\times p`).
+            The covariance matrix (shape: :math:`n \times p`).
         cfg : CfgNode
             The configuration
 
@@ -1029,22 +1090,21 @@ class EmpiricalDistribution(Distribution):
             An instance of the class.
         """
         instance: EmpiricalDistribution = cls.from_config(cfg)
-        instance.data: Float[np.ndarray, "n_samples, n_vars"] = cov
+        instance.data: Float[np.ndarray, n_samples, n_vars] = cov
         instance._iscov = True
         return instance
 
     def add_signal(
         self,
-        X: Float[np.ndarray, "n_samples_sig, n_vars_sig"],
+        X: Float[np.ndarray, n_samples_sig, n_vars_sig],
         snr: float = 0.0,
     ) -> EmpiricalDistribution:
-        """
-        Add a signal to the distribution.
+        r"""Add a signal to the distribution.
 
         Parameters
         ----------
         X : ndarray of floats
-            The signal to add (shape: :math:`n_S \\times p_S`). If :math:`n_S \\neq n` or :math:`p_S \\neq p`, the signal matrix will be resized to match the background.
+            The signal to add (shape: :math:`n_S \times p_S`). If :math:`n_S \neq n` or :math:`p_S \neq p`, the signal matrix will be resized to match the background.
         snr : float
             The signal-to-noise ratio, by default ``0.0``. If negative, then only signal is kept and noise is discarded.
 
@@ -1053,24 +1113,24 @@ class EmpiricalDistribution(Distribution):
         EmpiricalDistribution
             A new instance of the class with the signal added.
 
-        Raises
-        ------
-        ValueError
-            If the signal matrix is not 2-dimensional.
-
         Warns
         -----
         UserWarning
             If the distribution was created from a covariance matrix, adding a signal may lead to unexpected results.
+
+        Raises
+        ------
+        ValueError
+            If the signal matrix is not 2-dimensional.
         """
         if self._iscov:
             warn(
-                "You are adding a signal to a distribution created from a covariance matrix. This may lead to unexpected results."
+                "You are adding a signal to a distribution created from a covariance matrix. This may lead to unexpected results.",
             )
         if X.ndim != 2:
             raise ValueError(
                 "The signal matrix must be 2-dimensional but got %d-dimensional"
-                % X.ndim
+                % X.ndim,
             )
 
         # Add the signal to the background
@@ -1080,7 +1140,7 @@ class EmpiricalDistribution(Distribution):
         nS: int
         pS: int
         nS, pS = X.shape
-        signal: Float[np.ndarray, "n_samples_sig, n_vars_sig"] = (
+        signal: Float[np.ndarray, n_samples_sig, n_vars_sig] = (
             resize(X, output_shape=self.data.shape[:2])
             if ((n != nS) or (p != pS))
             else X
@@ -1088,20 +1148,21 @@ class EmpiricalDistribution(Distribution):
         if snr >= 0.0:
             self.data += snr * signal
         else:
-            self.data: Float[np.ndarray, "n_samples, n_vars"] = signal
+            self.data: Float[np.ndarray, n_samples, n_vars] = signal
 
         return self
 
     def _cov_eigh(
-        self, X: Float[np.ndarray, "n_samples, n_vars"], is_cov: bool = False
-    ) -> Float[np.ndarray, "n_vars"]:
-        """
-        Get the eigenvalues of the covariance matrix of the data (from the singular values of the data).
+        self,
+        X: Float[np.ndarray, n_samples, n_vars],
+        is_cov: bool = False,
+    ) -> Float[np.ndarray, n_vars]:
+        r"""Get the eigenvalues of the covariance matrix of the data (from the singular values of the data).
 
         Parameters
         ----------
         X : ndarray of floats
-            The data matrix (shape: :math:`n \\times p`).
+            The data matrix (shape: :math:`n \times p`).
         is_cov : bool
             Data are a covariance matrix, by default `False`.
 
@@ -1111,39 +1172,39 @@ class EmpiricalDistribution(Distribution):
             The eigenvalues of the distribution (shape: :math:`p`).
         """
         if is_cov:
-            cov: Float[np.ndarray, "n_vars, n_vars"] = X.copy()
+            cov: Float[np.ndarray, n_vars, n_vars] = X.copy()
         else:
-            cov: Float[np.ndarray, "n_vars, n_vars"] = (X.T @ X) / max(
-                1.0, float(self.n_samples - 1.0)
+            cov: Float[np.ndarray, n_vars, n_vars] = (X.T @ X) / max(
+                1.0,
+                float(self.n_samples - 1.0),
             )
         if hasattr(self, "_cov_noise"):
             cov += self._cov_noise
 
         # Compute the eigendecomposition
-        evl: Float[np.ndarray, "n_vars"]
-        evc: Float[np.ndarray, "n_vars, n_vars"]
+        evl: Float[np.ndarray, n_vars]
+        evc: Float[np.ndarray, n_vars, n_vars]
         evl, evc = np.linalg.eigh(cov)
-        self.eigenvalues_: Float[np.ndarray, "n_vars"] = evl
-        self.eigenvectors_: Float[np.ndarray, "n_vars, n_vars"] = evc
+        self.eigenvalues_: Float[np.ndarray, n_vars] = evl
+        self.eigenvectors_: Float[np.ndarray, n_vars, n_vars] = evc
         return evl
 
     @property
-    def eigenvalues(self) -> Float[np.ndarray, "n_vars"]:
-        """
-        Compute the eigenvalues of the distribution.
+    def eigenvalues(self) -> Float[np.ndarray, n_vars]:
+        """Compute the eigenvalues of the distribution.
 
-        .. note::
-
-            This is the complete list of eigenvalues (bulk + spikes).
-            You can access the filtered distribution **without** the spikes using the ``self.eigenvalues`` attribute, available after calling the ``self.fit(...)`` method.
+        Notes
+        -----
+        This is the complete list of eigenvalues (bulk + spikes). You can access the filtered distribution **without** the spikes using the ``self.eigenvalues`` attribute, available after calling the ``self.fit(...)`` method.
 
         Returns
         -------
         ndarray of floats
             The eigenvalues of the distribution, sorted in ascending order (shape: :math:`p`).
         """
-        evl: Float[np.ndarray, "n_vars"] = self._cov_eigh(
-            self.data, is_cov=self._iscov
+        evl: Float[np.ndarray, n_vars] = self._cov_eigh(
+            self.data,
+            is_cov=self._iscov,
         )
         assert self.eigenvalues_ is not None, "Error: Eigenvalues not computed!"
         assert self.eigenvectors_ is not None, (
@@ -1151,16 +1212,17 @@ class EmpiricalDistribution(Distribution):
         )
 
         # Sort the eigenvalues
-        idx: Integer[np.ndarray, "n_vars"] = np.argsort(evl)
+        idx: Integer[np.ndarray, n_vars] = np.argsort(evl)
         self.eigenvalues_ = evl[idx]
         self.eigenvectors_ = self.eigenvectors_[:, idx]
         return evl[idx]
 
     def find_spikes(
-        self, eigenvalues: Float[np.ndarray, "n_vars"], pow: float = 0.5
+        self,
+        eigenvalues: Float[np.ndarray, n_vars],
+        pow: float = 0.5,
     ) -> int:
-        """
-        Find the spikes in the eigenvalues.
+        """Find the spikes in the eigenvalues.
 
         The search for spikes is done by measuring the distance between eigenvalues from the IR to the UV. When eigenvalues start to form a continuous bulk (i.e. the difference between consecutive eigenvalues is smaller than a threshold), they are considered part of the bulk.
 
@@ -1179,7 +1241,7 @@ class EmpiricalDistribution(Distribution):
         dx: float = len(eigenvalues) ** (-pow)
 
         # Find the first gap from the IR (left) that is larger than dx
-        diff: Float[np.ndarray, "n_vars - 1"] = np.diff(eigenvalues)
+        diff: Float[np.ndarray, n_vars - 1] = np.diff(eigenvalues)
         large_gaps: np.ndarray = np.where(diff > dx)[0]
 
         if len(large_gaps) == 0:
@@ -1196,8 +1258,7 @@ class EmpiricalDistribution(Distribution):
         return int(large_gaps[0]) + 1
 
     def _find_pow(self, pow: float, snr: float) -> float:
-        """
-        Interpolate a power factor as a function of the SNR to ensure to eliminate all spikes.
+        """Interpolate a power factor as a function of the SNR to ensure to eliminate all spikes.
 
         Parameters
         ----------
@@ -1216,17 +1277,16 @@ class EmpiricalDistribution(Distribution):
 
     def fit(
         self,
-        X: Float[np.ndarray, "n_samples, n_vars"] | None = None,
+        X: Float[np.ndarray, n_samples, n_vars] | None = None,
         snr: float = 0.0,
         fac: float = 0.3,
     ) -> EmpiricalDistribution:
-        """
-        Add the signal (if provided) and compute the eigenvalue distribution.
+        r"""Add the signal (if provided) and compute the eigenvalue distribution.
 
         Parameters
         ----------
         X : ndarray of floats, optional
-            The signal to add (shape: :math:`n \\times p`).
+            The signal to add (shape: :math:`n \times p`).
         snr : float
             The signal-to-noise ratio.
         fac : float
@@ -1241,19 +1301,18 @@ class EmpiricalDistribution(Distribution):
             self.add_signal(X, snr=snr)
 
         # Remove the spikes from the eigenvalues and fit a KDE
-        evls: Float[np.ndarray, "n_vars"] = self.eigenvalues
+        evls: Float[np.ndarray, n_vars] = self.eigenvalues
         spikes: int = self.find_spikes(
-            eigenvalues=evls, pow=self._find_pow(pow=self.ratio, snr=snr)
+            eigenvalues=evls,
+            pow=self._find_pow(pow=self.ratio, snr=snr),
         )
 
         assert self.eigenvalues_ is not None, "Error: Eigenvalues not computed!"
         assert self.eigenvectors_ is not None, (
             "Error: Eigenvectors not computed!"
         )
-        self.eigenvalues_: Float[np.ndarray, "n_vars - n_spikes"] = evls[
-            :spikes
-        ]
-        self.eigenvectors_: Float[np.ndarray, "n_vars, n_vars - n_spikes"] = (
+        self.eigenvalues_: Float[np.ndarray, n_vars - n_spikes] = evls[:spikes]
+        self.eigenvectors_: Float[np.ndarray, n_vars, n_vars - n_spikes] = (
             self.eigenvectors_[:, :spikes]
         )
 
@@ -1270,13 +1329,13 @@ class EmpiricalDistribution(Distribution):
         # Compute the min and max points
         self.lminus: float = float(self.var * (1.0 - np.sqrt(self.ratio)) ** 2)
         self.lplus_mp: float = float(
-            self.var * (1.0 + np.sqrt(self.ratio)) ** 2
+            self.var * (1.0 + np.sqrt(self.ratio)) ** 2,
         )
         self.lplus: float = float(max(self.eigenvalues_))
         self.m2: float = 1.0 / (self.lplus - self.lminus)
         self.m2_mp: float = 1.0 / (self.lplus_mp - self.lminus)
         self.norm: float = float(
-            self.kde.integrate_box_1d(self.lminus, self.lplus)
+            self.kde.integrate_box_1d(self.lminus, self.lplus),
         )
 
         self._fitted: bool = True
@@ -1287,14 +1346,15 @@ class EmpiricalDistribution(Distribution):
 
     @overload
     def pdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def pdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the value of the *Probability Density Function* (PDF) of the eigenvalue distribution at given value(s) :math:`x`.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the value of the *Probability Density Function* (PDF) of the eigenvalue distribution at given value(s) :math:`x`.
 
         Parameters
         ----------
@@ -1305,10 +1365,15 @@ class EmpiricalDistribution(Distribution):
         -------
         float or ndarray of floats
             The value(s) of the PDF at the given value(s) (shape: scalar or array of shape :math:`n`).
+
+        Raises
+        ------
+        ValueError
+            If the distribution has not been fitted yet.
         """
         if not self._fitted:
             raise ValueError(
-                "The distribution must be fitted before calling `pdf`! Please call `self.fit()` first."
+                "The distribution must be fitted before calling `pdf`! Please call `self.fit()` first.",
             )
         if not isinstance(x, float):
             return np.vectorize(self.pdf, otypes=[np.float64])(x)
@@ -1323,14 +1388,15 @@ class EmpiricalDistribution(Distribution):
 
     @overload
     def cdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def cdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the CDF of the eigenvalue distribution.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the CDF of the eigenvalue distribution.
 
         Parameters
         ----------
@@ -1341,10 +1407,15 @@ class EmpiricalDistribution(Distribution):
         -------
         float or ndarray of floats
             The value(s) of the CDF at the given value(s) (shape: scalar or array of shape :math:`n`).
+
+        Raises
+        ------
+        ValueError
+            If the distribution has not been fitted yet.
         """
         if not self._fitted:
             raise ValueError(
-                "The distribution must be fitted before calling `cdf`! Please call `self.fit()` first."
+                "The distribution must be fitted before calling `cdf`! Please call `self.fit()` first.",
             )
         if not isinstance(x, float):
             return np.vectorize(self.cdf, otypes=[np.float64])(x)
@@ -1363,14 +1434,15 @@ class EmpiricalDistribution(Distribution):
 
     @overload
     def icdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def icdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the CDF of the distribution of the inverse of the eigenvalues.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the CDF of the distribution of the inverse of the eigenvalues.
 
         Parameters
         ----------
@@ -1381,10 +1453,15 @@ class EmpiricalDistribution(Distribution):
         -------
         float or ndarray of floats
             The value(s) of the CDF of the momenta (shape: scalar or array of shape :math:`n`).
+
+        Raises
+        ------
+        ValueError
+            If the distribution has not been fitted yet.
         """
         if not self._fitted:
             raise ValueError(
-                "The distribution must be fitted before calling ipdf! Please call ``self.fit()`` first."
+                "The distribution must be fitted before calling ipdf! Please call ``self.fit()`` first.",
             )
         if not isinstance(x, float):
             return np.vectorize(self.icdf, otypes=[np.float64])(x)
@@ -1407,12 +1484,11 @@ class EmpiricalDistribution(Distribution):
 
 
 class MarchenkoPastur(Distribution):
-    """
-    The **Marchenko-Pastur** distribution represents the distribution of eigenvalues of large random covariance matrices.
-    """
+    """The **Marchenko-Pastur** distribution represents the distribution of eigenvalues of large random covariance matrices."""
 
     def __init__(self, ratio: float, var: float):
-        """
+        r"""Initialize the Marchenko-Pastur distribution.
+
         Parameters
         ----------
         ratio : float
@@ -1420,10 +1496,15 @@ class MarchenkoPastur(Distribution):
 
             .. note::
 
-                Let :math:`X \\in \\mathbb{R}^{n \\times p}` be a real matrix where samples are **row** vectors, then the ``ratio`` parameter is :math:`\\frac{p}{n}`.
+                Let :math:`X \in \mathbb{R}^{n \times p}` be a real matrix where samples are **row** vectors, then the ``ratio`` parameter is :math:`\frac{p}{n}`.
 
         var : float
             The variance of the distribution.
+
+        Warns
+        -----
+        UserWarning
+            If ratio is higher than 1 because of numerical instabilities
 
         Raises
         ------
@@ -1431,15 +1512,10 @@ class MarchenkoPastur(Distribution):
             If ratio is not strictly positive
         ValueError
             If the lowest eigenvalue is higher than the highest one
-
-        Warns
-        -----
-        UserWarning
-            If ratio is higher than 1 because of numerical instabilities
         """
         if ratio <= 0.0:
             raise ValueError(
-                "Ratio must be strictly positive but got %f <= 0" % ratio
+                "Ratio must be strictly positive but got %f <= 0" % ratio,
             )
         if ratio >= 1.0:
             warn(
@@ -1449,7 +1525,7 @@ class MarchenkoPastur(Distribution):
             )
         if var < 0.0:
             raise ValueError(
-                "Variance must be non-negative but got %f < 0" % var
+                "Variance must be non-negative but got %f < 0" % var,
             )
 
         # Store the parameters
@@ -1463,7 +1539,7 @@ class MarchenkoPastur(Distribution):
         if self.lminus > self.lplus:
             raise ValueError(
                 "The smallest eigenvalue must be lower than the largest one, but got lminus = %f > %f = lplus!"
-                % (self.lminus, self.lplus)
+                % (self.lminus, self.lplus),
             )
 
     @overload
@@ -1471,30 +1547,35 @@ class MarchenkoPastur(Distribution):
 
     @overload
     def pdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def pdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the PDF of the Marchenko-Pastur distribution:
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        r"""Compute the PDF of the Marchenko-Pastur distribution.
+
+        Notes
+        -----
+        The PDF uses this mathematical formula:
 
         .. math::
 
-            \\mu_{\\text{MP}}(x) = \\frac{\\sqrt{(\\lambda_+ - x)(x - \\lambda_-)}}{2 \\pi \\sigma^2 q \\, x},
+            \mu_{\text{MP}}(x) = \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{2 \pi \sigma^2 q \, x},
 
         where
 
         .. math::
 
-            \\lambda_{\\pm} = \\sigma^2 (1 \\pm \\sqrt{q})^2,
+            \lambda_{\pm} = \sigma^2 (1 \pm \sqrt{q})^2,
 
         and
 
         .. math::
 
-            q = \\frac{p}{n}.
+            q = \frac{p}{n}.
 
         Parameters
         ----------
@@ -1511,10 +1592,10 @@ class MarchenkoPastur(Distribution):
         if (x <= self.lminus) or (x >= self.lplus):
             return 0.0
 
-        num: float | Float[np.ndarray, "n_samples"] = np.sqrt(
-            (self.lplus - x) * (x - self.lminus)
+        num: float | Float[np.ndarray, n_samples] = np.sqrt(
+            (self.lplus - x) * (x - self.lminus),
         )
-        den: float | Float[np.ndarray, "n_samples"] = (
+        den: float | Float[np.ndarray, n_samples] = (
             2.0 * np.pi * self.var * self.ratio * x
         )
         return num / den if den != 0.0 else 0.0
@@ -1524,14 +1605,15 @@ class MarchenkoPastur(Distribution):
 
     @overload
     def cdf(
-        self, x: Float[np.ndarray, "n_samples"]
-    ) -> Float[np.ndarray, "n_samples"]: ...
+        self,
+        x: Float[np.ndarray, n_samples],
+    ) -> Float[np.ndarray, n_samples]: ...
 
     def cdf(
-        self, x: float | Float[np.ndarray, "n_samples"]
-    ) -> float | Float[np.ndarray, "n_samples"]:
-        """
-        Compute the CDF of the Marchenko-Pastur distribution.
+        self,
+        x: float | Float[np.ndarray, n_samples],
+    ) -> float | Float[np.ndarray, n_samples]:
+        """Compute the CDF of the Marchenko-Pastur distribution.
 
         Parameters
         ----------

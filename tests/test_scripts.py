@@ -1,5 +1,4 @@
-"""
-Test scripts
+"""Test scripts.
 
 Test the computation scripts
 """
@@ -22,7 +21,7 @@ def test_canonical_dimensions_script(tmp_path, monkeypatch):
     cfg_path.write_text(
         "DATA:\n  OUTPUT_DIR: "
         + str(tmp_path)
-        + "\nDIST:\n  VAR: 1.0\n  RATIO: 0.5"
+        + "\nDIST:\n  VAR: 1.0\n  RATIO: 0.5",
     )
 
     # Run main with analytic flag
@@ -67,7 +66,7 @@ def test_evc_distribution_script(tmp_path):
     np.save(data_path, np.cov(np.random.randn(100, 10), rowvar=False))
     cfg_path = tmp_path / "test_cfg.yaml"
     cfg_path.write_text(
-        f"DATA:\n  OUTPUT_DIR: {tmp_path}\nSIG:\n  INPUT: {data_path}"
+        f"DATA:\n  OUTPUT_DIR: {tmp_path}\nSIG:\n  INPUT: {data_path}",
     )
     args = ["--config", str(cfg_path)]
     with patch("matplotlib.pyplot.savefig"):
@@ -77,21 +76,25 @@ def test_evc_distribution_script(tmp_path):
 
 def test_frg_equations_script(tmp_path):
     args = ["--analytic"]
-    with patch("matplotlib.pyplot.savefig"):
-        with patch(
+    with (
+        patch("matplotlib.pyplot.savefig"),
+        patch(
             "frg.distributions.distributions.MarchenkoPastur.frg_equations",
             return_value=np.zeros((1, 4)),
-        ):
-            rc = fe_main(args)
-            assert rc == 0
+        ),
+    ):
+        rc = fe_main(args)
+        assert rc == 0
 
 
 def test_frg_equations_lpa_script(tmp_path):
     args = ["--analytic"]
-    with patch("matplotlib.pyplot.savefig"):
-        with patch(
+    with (
+        patch("matplotlib.pyplot.savefig"),
+        patch(
             "frg.distributions.distributions.MarchenkoPastur.frg_equations_lpa",
             return_value=np.zeros((1, 4)),
-        ):
-            rc = felpa_main(args)
-            assert rc == 0
+        ),
+    ):
+        rc = felpa_main(args)
+        assert rc == 0

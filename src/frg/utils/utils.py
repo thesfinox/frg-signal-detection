@@ -1,20 +1,4 @@
-"""
-Utilities
----------
-
-Utility functions and helpers to handle configuration files and logging.
-
-Authors
--------
-
-- Riccardo Finotello <riccardo.finotello@cea.fr>
-- Parham Radpay <parhamradpay@gmail.com>
-
-Maintainers
------------
-
-- Riccardo Finotello
-"""
+"""Utility functions and helpers to handle configuration files and logging."""
 
 from __future__ import annotations
 
@@ -43,15 +27,13 @@ if TYPE_CHECKING:
 
 
 def get_cfg_defaults() -> CN:
-    """
-    Get the default configuration.
+    """Get the default configuration.
 
     Returns
     -------
     CfgNode
         The default configuration (YACS CfgNode)
     """
-
     cfg: CN = CN()
 
     # Distribution parameters
@@ -88,8 +70,7 @@ def get_cfg_defaults() -> CN:
 
 
 def get_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
-    """
-    Get the logger.
+    """Get the logger.
 
     Parameters
     ----------
@@ -128,15 +109,14 @@ def get_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
 
 
 def load_data(cfg: CN) -> EmpiricalDistribution:
-    """
-    Load the data from file.
+    """Load the data from file.
 
     Parameters
     ----------
     cfg : CN
         The configuration file.
 
-    .. warning:
+    .. warning::
 
         The image must be a B/W image (single channel) and present pixels in the range :math:`[0, 255]`.
 
@@ -144,6 +124,13 @@ def load_data(cfg: CN) -> EmpiricalDistribution:
     -------
     EmpiricalDistribution
         The distribution
+
+    Raises
+    ------
+    FileNotFoundError
+        If the input data file does not exist.
+    ValueError
+        If the input data file is not in the expected format.
     """
     data: Path = Path(os.path.expandvars(cfg.SIG.INPUT)).absolute()
     if not data.exists():
@@ -151,25 +138,26 @@ def load_data(cfg: CN) -> EmpiricalDistribution:
 
     # Create the distribution
     if data.suffix.lower() == ".npy":  # covariance matrix
-        data: Float[np.ndarray, "p, p"] = np.load(data)
+        data: Float[np.ndarray, p, p] = np.load(data)
         if data.ndim != 2:
             raise ValueError(
                 "Covariance matrix must be 2-dimensional but %d-dimensional found!"
-                % data.ndim
+                % data.ndim,
             )
         if data.shape[0] != data.shape[1]:
             raise ValueError(
                 "Covariance matrix must be square but shape %s found!"
-                % (data.shape,)
+                % (data.shape,),
             )
         dist: EmpiricalDistribution = EmpiricalDistribution.from_covariance(
-            cov=data, cfg=cfg
+            cov=data,
+            cfg=cfg,
         ).fit()
     elif data.suffix.lower() in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
         import imageio.v3 as iio  # import images
 
-        img: Float[np.ndarray, "h, w, c"] | Float[np.ndarray, "h, w"] = (
-            iio.imread(data)
+        img: Float[np.ndarray, h, w, c] | Float[np.ndarray, h, w] = iio.imread(
+            data
         )
         if img.ndim > 2:
             img = img.mean(axis=-1)
@@ -177,8 +165,7 @@ def load_data(cfg: CN) -> EmpiricalDistribution:
         img -= img.mean()  # centre the image
         img /= img.std()  # scale the image
         dist: EmpiricalDistribution = EmpiricalDistribution.from_config(
-            cfg
+            cfg,
         ).fit(X=img, snr=cfg.SIG.SNR, fac=0.3)
 
-    return dist
     return dist
