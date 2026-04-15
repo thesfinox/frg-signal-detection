@@ -8,7 +8,8 @@ import logging
 from frg.utils.utils import get_logger
 
 
-def test_logging(caplog):
+def test_logging(caplog) -> None:
+    """Test the logging features."""
     logger = get_logger(__name__)
     logger.debug("This is a DEBUG message")
     logger.info("This is an INFO message")

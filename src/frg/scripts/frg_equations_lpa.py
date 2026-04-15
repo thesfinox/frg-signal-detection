@@ -39,6 +39,23 @@ __epilog__: str = (
 
 
 def main(argv: list[str] | None = None) -> int | str:
+    """Run the FRG equations LPA script.
+
+    Parameters
+    ----------
+    argv : list[str], optional
+        The command-line arguments.
+
+    Returns
+    -------
+    int | str
+        The exit code or an error message.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the configuration file does not exist.
+    """
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description=__description__,
         epilog=__epilog__,

@@ -58,6 +58,18 @@ def copy_resource_dir(resource_pkg: str, target_dir: Path) -> None:
 
 
 def main(argv: list[str] | None = None) -> int | str:
+    """Run the workspace initialization script.
+
+    Parameters
+    ----------
+    argv : list[str], optional
+        The command-line arguments.
+
+    Returns
+    -------
+    int | str
+        The exit code or an error message.
+    """
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Initialize the frg workspace by copying template configs and scripts.",
     )

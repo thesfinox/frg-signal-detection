@@ -3,9 +3,11 @@
 Test the computation scripts
 """
 
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
+from pytest import MonkeyPatch
 
 from frg.scripts.canonical_dimensions import main as cd_main
 from frg.scripts.evc_distribution import main as evc_main
@@ -15,7 +17,10 @@ from frg.scripts.generate_config import main as gc_main
 from frg.scripts.init import main as init_main
 
 
-def test_canonical_dimensions_script(tmp_path, monkeypatch):
+def test_canonical_dimensions_script(
+    tmp_path: Path, monkeypatch: MonkeyPatch
+) -> None:
+    """Test the canonical dimensions script."""
     # Create a dummy config
     cfg_path = tmp_path / "test_cfg.yaml"
     cfg_path.write_text(
@@ -31,7 +36,8 @@ def test_canonical_dimensions_script(tmp_path, monkeypatch):
         assert rc == 0
 
 
-def test_generate_config_script(tmp_path):
+def test_generate_config_script(tmp_path: Path) -> None:
+    """Test the config generation script."""
     base_config = tmp_path / "base.yaml"
     base_config.write_text("DIST:\n  NUM_SAMPLES: 100")
 
@@ -50,7 +56,8 @@ def test_generate_config_script(tmp_path):
     assert rc == 0
 
 
-def test_init_script(tmp_path):
+def test_init_script(tmp_path: Path) -> None:
+    """Test the workspace initialization script."""
     # init.py doesn't have --output, it uses cwd
     with patch("frg.scripts.init.copy_resource_dir") as mock_copy:
         with patch("pathlib.Path.cwd", return_value=tmp_path):
@@ -59,7 +66,8 @@ def test_init_script(tmp_path):
             assert mock_copy.called
 
 
-def test_evc_distribution_script(tmp_path):
+def test_evc_distribution_script(tmp_path: Path) -> None:
+    """Test the eigenvector distribution script."""
     import numpy as np
 
     data_path = tmp_path / "data.npy"
@@ -74,7 +82,8 @@ def test_evc_distribution_script(tmp_path):
         assert rc == 0
 
 
-def test_frg_equations_script(tmp_path):
+def test_frg_equations_script(tmp_path: Path) -> None:
+    """Test the FRG equations script."""
     args = ["--analytic"]
     with (
         patch("matplotlib.pyplot.savefig"),
@@ -87,7 +96,8 @@ def test_frg_equations_script(tmp_path):
         assert rc == 0
 
 
-def test_frg_equations_lpa_script(tmp_path):
+def test_frg_equations_lpa_script(tmp_path: Path) -> None:
+    """Test the FRG equations LPA script."""
     args = ["--analytic"]
     with (
         patch("matplotlib.pyplot.savefig"),

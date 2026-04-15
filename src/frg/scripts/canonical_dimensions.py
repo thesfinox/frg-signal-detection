@@ -172,6 +172,18 @@ def _save_results(
 
 
 def main(argv: list[str] | None = None) -> int | str:
+    """Run the canonical dimensions computation script.
+
+    Parameters
+    ----------
+    argv : list[str], optional
+        The command-line arguments.
+
+    Returns
+    -------
+    int | str
+        The exit code or an error message.
+    """
     a: argparse.Namespace = _parse_args(argv)
 
     # Get the logger

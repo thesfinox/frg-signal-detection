@@ -32,14 +32,16 @@ from frg.utils.analysis import (
 )
 
 
-def test_ema():
+def test_ema() -> None:
+    """Test exponential moving average."""
     x = [1, 2, 3, 4, 5]
     y = [10, 20, 30, 40, 50]
     new_x, new_y = _ema(x, y, win=2)
     assert len(new_x) < len(x)
 
 
-def test_compute_roi():
+def test_compute_roi() -> None:
+    """Test Region Of Interest (ROI) computation."""
     k2 = np.linspace(0, 1, 100)
     dist_vals = np.exp(-((k2 - 0.2) ** 2))
     data = {"k2": k2.tolist(), "dist": dist_vals.tolist()}
@@ -47,7 +49,8 @@ def test_compute_roi():
     assert isinstance(idx, int)
 
 
-def test_interp_canonical_dimensions():
+def test_interp_canonical_dimensions() -> None:
+    """Test interpolation of canonical dimensions."""
     k2 = np.linspace(0, 1, 100)
     data = {
         "k2": k2.tolist(),
@@ -61,7 +64,8 @@ def test_interp_canonical_dimensions():
     assert f2(k2[idx]) == pytest.approx(data["dimu2"][idx], rel=1e-1)
 
 
-def test_extract_interp_values():
+def test_extract_interp_values() -> None:
+    """Test extraction of interpolated values."""
     k2 = np.linspace(0, 1, 100)
     data = {
         "k2": k2.tolist(),
@@ -74,7 +78,8 @@ def test_extract_interp_values():
     assert isinstance(v2, float)
 
 
-def test_canonical_dimensions_argsort():
+def test_canonical_dimensions_argsort() -> None:
+    """Test sorting of canonical dimensions."""
     x = [1.0, 0.5]
     d2 = [0.1, 0.2]
     d4 = [0.3, 0.4]
@@ -84,7 +89,8 @@ def test_canonical_dimensions_argsort():
 
 
 @patch("matplotlib.pyplot.savefig")
-def test_plots(mock_savefig, tmp_path):
+def test_plots(mock_savefig, tmp_path) -> None:
+    """Test plotting functions."""
     k2 = np.linspace(0, 1, 100)
     data = {
         "k2": k2.tolist(),
@@ -112,7 +118,8 @@ def test_plots(mock_savefig, tmp_path):
     plot_trajectories(data, output_dir=tmp_path)
 
 
-def test_add_values():
+def test_add_values() -> None:
+    """Test adding values to lists."""
     interp_values = (0.1, 0.2, 0.3, 0.4)
     scale, d2, d4, d6 = [], [], [], []
     add_values(interp_values, scale, d2, d4, d6)
@@ -121,7 +128,8 @@ def test_add_values():
 
 
 @patch("matplotlib.pyplot.savefig")
-def test_more_plots(mock_savefig, tmp_path):
+def test_more_plots(mock_savefig, tmp_path) -> None:
+    """Test more plotting functions."""
     df = pd.DataFrame(
         {
             ("dimu2", "mean"): [0.1, 0.2],
@@ -144,7 +152,8 @@ def test_more_plots(mock_savefig, tmp_path):
     plot_potential(x, u2, u4, n=0, output_dir=tmp_path)
 
 
-def test_file_helpers(tmp_path):
+def test_file_helpers(tmp_path) -> None:
+    """Test file helper functions."""
     k2 = np.linspace(0, 1, 100)
     data = {
         "dist": np.exp(-((k2 - 0.2) ** 2)).tolist(),
@@ -163,7 +172,8 @@ def test_file_helpers(tmp_path):
 
 
 @patch("matplotlib.pyplot.savefig")
-def test_localization_plots(mock_savefig, tmp_path):
+def test_localization_plots(mock_savefig, tmp_path) -> None:
+    """Test localization plotting functions."""
     data = {
         "evl": np.linspace(0, 1, 200).tolist(),
         "evc": np.random.randn(200, 200).tolist(),
@@ -181,7 +191,8 @@ def test_localization_plots(mock_savefig, tmp_path):
 
 
 @patch("matplotlib.pyplot.savefig")
-def test_symmetry_plots(mock_savefig, tmp_path):
+def test_symmetry_plots(mock_savefig, tmp_path) -> None:
+    """Test symmetry plotting functions."""
     plot_symmetry_surface(
         [1, 0],
         [0.1, 0.2],
@@ -192,7 +203,8 @@ def test_symmetry_plots(mock_savefig, tmp_path):
 
 
 @patch("matplotlib.pyplot.savefig")
-def test_adherence(mock_savefig, tmp_path):
+def test_adherence(mock_savefig, tmp_path) -> None:
+    """Test adherence plotting functions."""
     k2 = np.linspace(0.1, 1, 100)
     data = {
         "k2": k2.tolist(),

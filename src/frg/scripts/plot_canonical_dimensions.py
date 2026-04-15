@@ -42,6 +42,23 @@ __epilog__ = "For bug reports and info: " + __author__ + " <" + __email__ + ">"
 
 
 def main(argv: list[str] | None = None) -> int | str:
+    """Run the canonical dimensions plotting script.
+
+    Parameters
+    ----------
+    argv : list[str], optional
+        The command-line arguments.
+
+    Returns
+    -------
+    int | str
+        The exit code or an error message.
+
+    Raises
+    ------
+    ValueError
+        If the input file or directory does not exist.
+    """
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description=__description__,
         epilog=__epilog__,
