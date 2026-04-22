@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 authors = [
@@ -69,14 +69,14 @@ frg-generate-config = "frg.scripts.generate_config:cli"
 frg-plot-canonical-dimensions = "frg.scripts.plot_canonical_dimensions:cli"
 frg-init = "frg.scripts.init:cli"
 
-[tool.setuptools.dynamic]
-version = { attr = "frg.__version__" }
+[tool.hatch.version]
+source = "vcs"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
 
-[tool.setuptools.package-data]
-frg = ["configs/*.json", "configs/*.yaml", "notebooks/*.ipynb", "scripts/*.sh"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/frg"]
 
 [tool.ruff]
 exclude = [

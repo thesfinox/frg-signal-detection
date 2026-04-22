@@ -3,6 +3,24 @@
 The work is based on `theoretical advancements <https://arxiv.org/abs/2201.04250>`__ and previous `numerical works <https://arxiv.org/abs/2310.07499>`__ and `improvements <https://arxiv.org/abs/2507.01064>`__.
 """
 
+from importlib.metadata import PackageNotFoundError, metadata
+
+try:
+    _meta = metadata("frg-signal-detection")
+    __version__ = _meta["Version"]
+    __author__ = _meta["Author-email"].split("<")[0].strip().rstrip(",").strip()
+    __email__ = _meta["Author-email"].split("<")[-1].rstrip(">").strip()
+    __url__ = _meta.get(
+        "Project-URL", "https://github.com/thesfinox/frg-signal-detection"
+    )
+except PackageNotFoundError:
+    __version__ = "0.0.0-unknown"
+    __author__ = "Riccardo Finotello"
+    __email__ = "riccardo.finotello@cea.fr"
+    __url__ = "https://github.com/thesfinox/frg-signal-detection"
+
+__license__ = "CEA Proprietary License"
+
 # Import the modules
 from frg.distributions.distributions import (
     EmpiricalDistribution,
@@ -32,17 +50,6 @@ from frg.utils.analysis import (
     plot_trajectories,
 )
 from frg.utils.utils import get_cfg_defaults, get_logger, load_data
-
-# Set the version number
-__version__ = "v2.3.1"
-
-# Set the author
-__author__ = "Riccardo Finotello"
-__email__ = "riccardo.finotello@cea.fr"
-
-# Set the license description
-__license__ = "CEA Proprietary License"
-__url__ = "https://github.com/thesfinox/frg-signal-detection"
 
 # Package imports
 __all__ = [
