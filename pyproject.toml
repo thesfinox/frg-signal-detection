@@ -5,8 +5,7 @@ build-backend = "hatchling.build"
 [project]
 authors = [
     { name = "Riccardo Finotello", email = "riccardo.finotello@cea.fr" },
-    { name = "Vincent Lahoche", email = "vincent.lahoche@cea.fr" },
-    { name = "Dine Ousmane Samary", email = "dine.ousmanesamary@cea.fr" },
+    { name = "Parham Radpay", email = "parhamradpay@gmail.com" },
 ]
 name = "frg-signal-detection"
 description = "An agnostic definition of detection limit using renormalisation group techniques"
