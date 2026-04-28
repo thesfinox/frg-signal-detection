@@ -55,7 +55,7 @@ dev = ["better-exceptions>=0.3.3", "pre-commit>=4.2.0"]
 
 [project.urls]
 Homepage = "https://github.com/thesfinox/frg-signal-detection"
-Documentation = "https://detection-limit-signal-detection-db0eefa500d1c4c011fb006e8740d8.pages.in2p3.fr/"
+Documentation = "https://frg-signal-detection.readthedocs.io/en/latest/"
 Repository = "https://github.com/thesfinox/frg-signal-detection"
 Issues = "https://github.com/thesfinox/frg-signal-detection/issues"
 
@@ -66,6 +66,7 @@ frg-equations = "frg.scripts.frg_equations:cli"
 frg-equations-lpa = "frg.scripts.frg_equations_lpa:cli"
 frg-generate-config = "frg.scripts.generate_config:cli"
 frg-plot-canonical-dimensions = "frg.scripts.plot_canonical_dimensions:cli"
+frg-plot-canonical-dimensions-scan = "frg.scripts.plot_canonical_dimensions_scan:cli"
 frg-init = "frg.scripts.init:cli"
 
 [tool.hatch.version]

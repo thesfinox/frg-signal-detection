@@ -1195,7 +1195,7 @@ class EmpiricalDistribution(Distribution):
 
         Notes
         -----
-        This is the complete list of eigenvalues (bulk + spikes). You can access the filtered distribution **without** the spikes using the ``self.eigenvalues`` attribute, available after calling the ``self.fit(...)`` method.
+        This is the complete list of eigenvalues (bulk + spikes). You can access the filtered distribution **without** the spikes using the ``self.eigenvalues_`` attribute, available after calling the ``self.fit(...)`` method.
 
         Returns
         -------

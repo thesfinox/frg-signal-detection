@@ -548,8 +548,10 @@ def plot_canonical_dimensions(
     suffix: str | None = None,
     analytic: bool = False,
     output_dir: str | Path = "plots",
+    ratio: float | None = None,
+    var: float | None = None,
 ) -> None:
-    """Plot a single instance of the canonical dimensions.
+    r"""Plot a single instance of the canonical dimensions.
 
     Parameters
     ----------
@@ -563,6 +565,12 @@ def plot_canonical_dimensions(
         Analytic computation. By default `False`.
     output_dir : str | Path
         The output directory. By default `"plots"`.
+    ratio : float, optional
+        Marchenko-Pastur ratio :math:`q = p/n`. If provided together with ``var``,
+        displayed as the legend title.
+    var : float, optional
+        Marchenko-Pastur variance :math:`\\sigma^2`. If provided together with
+        ``ratio``, displayed as the legend title.
     """
     out_dir: Path = Path(output_dir)
     if not out_dir.exists():
@@ -642,7 +650,7 @@ def plot_canonical_dimensions(
         ax.text(
             x=k2_idx * 1.1,
             y=dimu2_interp(k2_idx),
-            s=f"$\text{{dim}}(u_2) = {dimu2_interp(k2_idx):.2f}$",
+            s=rf"$\text{{dim}}(u_2) = {dimu2_interp(k2_idx):.2f}$",
             color="r",
             fontsize=10,
             ha="left",
@@ -652,7 +660,7 @@ def plot_canonical_dimensions(
         ax.text(
             x=k2_idx * 1.1,
             y=dimu4_interp(k2_idx),
-            s=f"$\text{{dim}}(u_4) = {dimu4_interp(k2_idx):.2f}$",
+            s=rf"$\text{{dim}}(u_4) = {dimu4_interp(k2_idx):.2f}$",
             color="g",
             fontsize=10,
             ha="left",
@@ -662,7 +670,7 @@ def plot_canonical_dimensions(
         ax.text(
             x=k2_idx * 1.1,
             y=dimu6_interp(k2_idx),
-            s=f"$\text{{dim}}(u_6) = {dimu6_interp(k2_idx):.2f}$",
+            s=rf"$\text{{dim}}(u_6) = {dimu6_interp(k2_idx):.2f}$",
             color="b",
             fontsize=10,
             ha="left",
@@ -677,20 +685,220 @@ def plot_canonical_dimensions(
         scilimits=(0, 0),
         useMathText=True,
     )
+    _legend_title: str | None = (
+        rf"$q = {ratio},\ \sigma^2 = {var}$"
+        if ratio is not None and var is not None
+        else None
+    )
     ax.legend(
         loc="upper center",
-        bbox_to_anchor=(0.5, -0.15),
+        bbox_to_anchor=(0.5, -0.1),
         ncol=3,
         frameon=False,
+        title=_legend_title,
     )
     ax2 = ax.twinx()
     ax2.plot(data["k2"], data["dist"], "k--")
-    ax2.set(ylabel="PDF")
+    ax2.set(ylabel=r"$\rho$")
 
     if suffix is None:
         plt.savefig(out_dir / "canonical_dimensions.pdf")
     else:
         plt.savefig(out_dir / f"canonical_dimensions_{suffix}.pdf")
+
+
+def plot_canonical_dimensions_eigenvalues(
+    data: dict[str, Any],
+    dist: Distribution,
+    thresh: float = 0.5,
+    suffix: str | None = None,
+    analytic: bool = False,
+    output_dir: str | Path = "plots",
+) -> None:
+    r"""Plot a single instance of the canonical dimensions on the eigenvalue spectrum.
+
+    The momentum scale :math:`k^2` is mapped back to the eigenvalue axis
+    :math:`\lambda` via the inverse of the change of variables used in
+    :meth:`~frg.distributions.distributions.Distribution.ipdf`:
+
+    .. math::
+
+        \lambda = \frac{1}{k^2 + m^2} + \lambda_-
+
+    where :math:`m^2` is the mass (inverse of the largest eigenvalue) and
+    :math:`\lambda_-` is the smallest eigenvalue of the distribution.
+
+    Parameters
+    ----------
+    data : dict[str, Any]
+        The results of the computation of the canonical dimensions (as produced
+        by the canonical-dimensions scripts).  Expected keys: ``"k2"``,
+        ``"dimu2"``, ``"dimu4"``, ``"dimu6"``.
+    dist : Distribution
+        The distribution instance used to perform the computation.  Its
+        ``m2`` and ``lminus`` attributes define the variable transformation,
+        and its ``pdf`` method is used to draw the eigenvalue PDF on a twin
+        axis.
+    thresh : float
+        The value of the threshold on the distribution to be considered
+        "bulk". By default ``0.5``.
+    suffix : str, optional
+        The suffix of the output file name.
+    analytic : bool
+        Analytic computation. By default ``False``.
+    output_dir : str | Path
+        The output directory. By default ``"plots"``.
+    """
+    out_dir: Path = Path(output_dir)
+    if not out_dir.exists():
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+    fig: Figure
+    ax: Axes
+    fig, ax = plt.subplots(figsize=(7, 5), layout="constrained")
+
+    # Convert k^2 to lam  using:  lam = 1 / (k^2 + m^2) + lam_-
+    k2: Float[np.ndarray, n] = np.asarray(data["k2"])
+    lam: Float[np.ndarray, n] = 1.0 / (k2 + dist.m2) + dist.lminus
+
+    # Region of interest (computed in momentum space, index-compatible)
+    idx: int
+    start: int
+    top: int
+    idx, start, top = compute_roi(data=data, thresh=thresh)
+
+    # Raw curves
+    ax.plot(
+        lam,
+        data["dimu2"],
+        "r-",
+        alpha=0.25 if not analytic else 1.0,
+        label=None if not analytic else r"$\text{dim}(u_{2})$",
+    )
+    ax.plot(
+        lam,
+        data["dimu4"],
+        "g--",
+        alpha=0.25 if not analytic else 1.0,
+        label=None if not analytic else r"$\text{dim}(u_{4})$",
+    )
+    ax.plot(
+        lam,
+        data["dimu6"],
+        "b-.",
+        alpha=0.25 if not analytic else 1.0,
+        label=None if not analytic else r"$\text{dim}(u_{6})$",
+    )
+
+    # Interpolations and annotations (non-analytic case)
+    if not analytic:
+        dimu2_interp: Callable
+        dimu4_interp: Callable
+        dimu6_interp: Callable
+        dimu2_interp, dimu4_interp, dimu6_interp = interp_canonical_dimensions(
+            data,
+            idx,
+        )
+
+        # The interpolants are functions of k^2; evaluate at each λ point
+        ax.plot(
+            lam,
+            dimu2_interp(k2),
+            "r-",
+            label=r"$\text{dim}(u_{2})$",
+        )
+        ax.plot(
+            lam,
+            dimu4_interp(k2),
+            "g--",
+            label=r"$\text{dim}(u_{4})$",
+        )
+        ax.plot(
+            lam,
+            dimu6_interp(k2),
+            "b-.",
+            label=r"$\text{dim}(u_{6})$",
+        )
+
+        # Shaded ROI (in lam coordinates; note: lam is *decreasing* in k^2,
+        # so start/top indices are reversed on the lam axis)
+        lam_start: float = lam[start]
+        lam_top: float = lam[top]
+        ax.axvspan(
+            min(lam_start, lam_top),
+            max(lam_start, lam_top),
+            ls="dashed",
+            color="r",
+            alpha=0.05,
+        )
+
+        lam_idx: float = lam[idx]
+        ax.axvline(lam_idx, ls="dashed", color="r", alpha=0.25)
+
+        ax.plot([lam_idx], [dimu2_interp(k2[idx])], "ro")
+        ax.text(
+            x=lam_idx * 1.01,
+            y=dimu2_interp(k2[idx]),
+            s=rf"$\text{{dim}}(u_2) = {dimu2_interp(k2[idx]):.2f}$",
+            color="r",
+            fontsize=10,
+            ha="left",
+            va="bottom",
+        )
+        ax.plot([lam_idx], [dimu4_interp(k2[idx])], "go")
+        ax.text(
+            x=lam_idx * 1.01,
+            y=dimu4_interp(k2[idx]),
+            s=rf"$\text{{dim}}(u_4) = {dimu4_interp(k2[idx]):.2f}$",
+            color="g",
+            fontsize=10,
+            ha="left",
+            va="bottom",
+        )
+        ax.plot([lam_idx], [dimu6_interp(k2[idx])], "bo")
+        ax.text(
+            x=lam_idx * 1.01,
+            y=dimu6_interp(k2[idx]),
+            s=rf"$\text{{dim}}(u_6) = {dimu6_interp(k2[idx]):.2f}$",
+            color="b",
+            fontsize=10,
+            ha="left",
+            va="bottom",
+        )
+
+    ax.set_xlabel(r"$\lambda$")
+    ax.set_ylabel("canonical dimensions")
+    ax.ticklabel_format(
+        axis="both",
+        style="sci",
+        scilimits=(0, 0),
+        useMathText=True,
+    )
+    _ratio: float | None = getattr(dist, "ratio", None)
+    _var: float | None = getattr(dist, "var", None)
+    _legend_title: str | None = (
+        rf"$q = {_ratio},\ \sigma^2 = {_var}$"
+        if _ratio is not None and _var is not None
+        else None
+    )
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.1),
+        ncol=3,
+        frameon=False,
+        title=_legend_title,
+    )
+
+    # Twin axis: eigenvalue PDF  µ(λ) — plotted over the full spectrum [0, λ+]
+    lam_full: Float[np.ndarray, n] = np.linspace(0.0, dist.lplus, num=1000)
+    ax2 = ax.twinx()
+    ax2.plot(lam_full, dist.pdf(lam_full), "k--")
+    ax2.set(ylabel=r"$\mu$")
+
+    if suffix is None:
+        plt.savefig(out_dir / "canonical_dimensions_eigenvalues.pdf")
+    else:
+        plt.savefig(out_dir / f"canonical_dimensions_eigenvalues_{suffix}.pdf")
 
 
 def _setup_figure(

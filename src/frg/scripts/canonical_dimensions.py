@@ -25,6 +25,8 @@ if TYPE_CHECKING:
     from jaxtyping import Float
     from yacs.config import CfgNode
 
+    n_dof: int = 1000
+
 __author__: str = "Riccardo Finotello and Parham Radpay"
 __email__: str = "riccardo.finotello@cea.fr; parham.radpay@gmail.com"
 __description__: str = "Compute the canonical dimensions of the couplings in a theory with given momenta distribution."
@@ -127,6 +129,7 @@ def _setup_distribution(
 def _save_results(
     cfg: CfgNode,
     a: argparse.Namespace,
+    evl: Float[np.ndarray, n_dof] | None,
     x: Float[np.ndarray, 5000],
     dimu2: Float[np.ndarray, 5000],
     dimu4: Float[np.ndarray, 5000],
@@ -155,8 +158,9 @@ def _save_results(
         suffix = f"analytic_var={cfg.DIST.VAR}_ratio={cfg.DIST.RATIO}_seed={cfg.DIST.SEED}"
 
     output_file: Path = output_dir / f"mp_canonical_dimensions_{suffix}.json"
-    payload: dict[str, list[float] | float] = {
+    payload: dict[str, list[float] | float | None] = {
         "k2": x.tolist(),
+        "evl": evl.tolist() if evl is not None else None,
         "dimu2": dimu2.tolist(),
         "dimu4": dimu4.tolist(),
         "dimu6": dimu6.tolist(),
@@ -215,7 +219,8 @@ def main(argv: list[str] | None = None) -> int | str:
     dimu2, dimu4, dimu6, _ = dist.canonical_dimensions(x).T
 
     # Save data
-    _save_results(cfg, a, x, dimu2, dimu4, dimu6, dist, logger)
+    evl: Float[np.ndarray, n_dof] | None = getattr(dist, "eigenvalues_", None)
+    _save_results(cfg, a, evl, x, dimu2, dimu4, dimu6, dist, logger)
 
     return 0
 
