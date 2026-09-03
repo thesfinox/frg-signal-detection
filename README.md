@@ -7,6 +7,7 @@
 
 [![arXiv](https://img.shields.io/badge/arxiv-2507.01064-red)](https://arxiv.org/abs/2507.01064)
 [![arXiv](https://img.shields.io/badge/arxiv-2605.11138-red)](https://arxiv.org/abs/2605.11138)
+[![arXiv](https://img.shields.io/badge/arxiv-2607.27236-red)](https://arxiv.org/abs/2607.27236)
 [![github](https://img.shields.io/badge/github-frg--signal--detection-blue?logo=github)](https://github.com/thesfinox/frg-signal-detection)
 [![Documentation Status](https://readthedocs.org/projects/frg-signal-detection/badge/?version=latest)](https://frg-signal-detection.readthedocs.io/en/latest/)
 
